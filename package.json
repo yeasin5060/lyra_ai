@@ -1,0 +1,18 @@
+{
+  "name": "lyra-ai",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@10.0.0",
+  "scripts": {
+    "dev": "pnpm --parallel --filter @lyra/web --filter @lyra/server dev",
+    "build": "pnpm --recursive --if-present build",
+    "typecheck": "pnpm --recursive --if-present typecheck",
+    "lint": "pnpm --recursive --if-present lint",
+    "format": "prettier --write .",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down"
+  },
+  "devDependencies": {
+    "prettier": "^3.6.0"
+  }
+}

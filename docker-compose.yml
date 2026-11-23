@@ -1,0 +1,26 @@
+services:
+  mongodb:
+    image: mongo:8
+    container_name: lyra-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: lyra_admin
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: lyra_ai
+    ports:
+      - "127.0.0.1:27017:27017"
+    volumes:
+      - lyra_mongodb_data:/data/db
+    healthcheck:
+      test:
+        - CMD
+        - mongosh
+        - --quiet
+        - --eval
+        - "db.adminCommand('ping').ok"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  lyra_mongodb_data:
