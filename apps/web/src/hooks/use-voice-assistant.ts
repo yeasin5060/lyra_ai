@@ -1,0 +1,398 @@
+"use client";
+
+import { useCallback, useEffect, useRef, useState } from "react";
+import { detectLanguage, type DetectedLanguage } from "@/lib/voice/language-detector";
+import { softVoiceSynthesizer } from "@/lib/voice/speech-synthesizer";
+import { speechRecognizer } from "@/lib/voice/speech-recognizer";
+import { wakeWordEngine } from "@/lib/voice/wake-word-engine";
+
+export type AssistantState = "idle" | "listening" | "processing" | "speaking" | "sleeping";
+
+export interface VoiceMessage {
+  id: string;
+  sender: "user" | "lyra";
+  text: string;
+  language: DetectedLanguage;
+  timestamp: string;
+}
+
+export function useVoiceAssistant() {
+  const [state, setState] = useState<AssistantState>("idle");
+  const [isSleeping, setIsSleeping] = useState<boolean>(false);
+  const [transcript, setTranscript] = useState("");
+  const [lastResponse, setLastResponse] = useState<string>(
+    "হ্যালো! আমি লায়রা। আমার ভয়েস ইঞ্জিন সর্বদা সক্রিয় আছে। মুখে যেকোনো প্রশ্ন করলেই আমি মিষ্টি কণ্ঠে উত্তর দেব।"
+  );
+  const [preferredLang, setPreferredLang] = useState<"auto" | "bn" | "en">("auto");
+  const [detectedLang, setDetectedLang] = useState<DetectedLanguage>("bn");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isAutoVoiceActive, setIsAutoVoiceActive] = useState<boolean>(true);
+  const [micPermissionGranted, setMicPermissionGranted] = useState<boolean>(false);
+
+  const [messages, setMessages] = useState<VoiceMessage[]>([
+    {
+      id: "initial-welcome",
+      sender: "lyra",
+      text: "হ্যালো! আমি লায়রা। আমি সবসময় আপনার কথা শুনছি। ফেসবুক, ইউটিউব, হোয়াটসঅ্যাপের মেসেজ বা যেকোনো বিষয়ে কথা বলুন!",
+      language: "bn",
+      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    }
+  ]);
+  const [isMuted, setIsMuted] = useState(false);
+  const [audioLevels, setAudioLevels] = useState<number[]>([15, 25, 40, 20, 35, 18, 45, 30, 22]);
+
+  const isSleepingRef = useRef(false);
+  const isSpeakingRef = useRef(false);
+  const hasProcessedRef = useRef(false);
+
+  useEffect(() => {
+    isSleepingRef.current = isSleeping;
+  }, [isSleeping]);
+
+  // Audio waveform animation
+  useEffect(() => {
+    if (isSleeping) {
+      setAudioLevels([6, 8, 12, 10, 8, 12, 10, 6, 4]);
+      return;
+    }
+
+    if (state === "listening" || state === "speaking") {
+      const interval = setInterval(() => {
+        setAudioLevels([
+          Math.floor(Math.random() * 65 + 15),
+          Math.floor(Math.random() * 85 + 20),
+          Math.floor(Math.random() * 95 + 25),
+          Math.floor(Math.random() * 75 + 20),
+          Math.floor(Math.random() * 100 + 30),
+          Math.floor(Math.random() * 80 + 25),
+          Math.floor(Math.random() * 90 + 20),
+          Math.floor(Math.random() * 70 + 15),
+          Math.floor(Math.random() * 55 + 10)
+        ]);
+      }, 90);
+      return () => clearInterval(interval);
+    } else {
+      setAudioLevels([15, 20, 25, 20, 30, 20, 25, 18, 15]);
+    }
+  }, [state, isSleeping]);
+
+  const speakReply = useCallback(
+    (text: string, lang: "bn" | "en", onComplete?: () => void) => {
+      if (isMuted) {
+        if (!isSleepingRef.current) setState("idle");
+        onComplete?.();
+        return;
+      }
+
+      // Pause mic while speaking to avoid hearing herself
+      isSpeakingRef.current = true;
+      setState("speaking");
+      speechRecognizer.pauseTemporarily();
+
+      softVoiceSynthesizer.speak(text, {
+        language: lang,
+        pitch: isSleepingRef.current ? 1.05 : lang === "bn" ? 1.15 : 1.08,
+        rate: isSleepingRef.current ? 0.90 : lang === "bn" ? 0.94 : 0.95,
+        onStart: () => {
+          setState("speaking");
+        },
+        onEnd: () => {
+          isSpeakingRef.current = false;
+          if (isSleepingRef.current) {
+            setState("sleeping");
+          } else {
+            setState("listening");
+            // Resume continuous listening automatically
+            setTimeout(() => {
+              speechRecognizer.resumeListening();
+            }, 300);
+          }
+          onComplete?.();
+        },
+        onError: () => {
+          isSpeakingRef.current = false;
+          if (isSleepingRef.current) {
+            setState("sleeping");
+          } else {
+            setState("listening");
+            speechRecognizer.resumeListening();
+          }
+          onComplete?.();
+        }
+      });
+    },
+    [isMuted]
+  );
+
+  const goToSleep = useCallback(() => {
+    setIsSleeping(true);
+    isSleepingRef.current = true;
+    setState("sleeping");
+
+    const farewell =
+      "ঠিক আছে, আমি এখন স্লিপ মোডে যাচ্ছি। আমাকে প্রয়োজন হলে শুধু 'Hey LYRA' বললেই আমি সাথে সাথে জেগে উঠব। শুভ রাত্রি!";
+    setLastResponse(farewell);
+    speakReply(farewell, "bn", () => {
+      setState("sleeping");
+    });
+  }, [speakReply]);
+
+  const wakeUp = useCallback(() => {
+    setIsSleeping(false);
+    isSleepingRef.current = false;
+    setState("idle");
+    wakeWordEngine.playWakeChirp();
+
+    const wakeMsg = "আমি জেগে উঠেছি! বলুন, আপনার জন্য কি করতে পারি?";
+    setLastResponse(wakeMsg);
+    speakReply(wakeMsg, "bn");
+  }, [speakReply]);
+
+  const processQuery = useCallback(
+    async (text: string) => {
+      const query = text.trim();
+      if (!query) {
+        if (!isSleepingRef.current) setState("listening");
+        return;
+      }
+
+      // Avoid processing if already speaking
+      if (isSpeakingRef.current) return;
+
+      const cleanLower = query.toLowerCase();
+
+      // Check if user is asking to wake up while sleeping
+      if (
+        isSleepingRef.current &&
+        (cleanLower.includes("wake") ||
+          cleanLower.includes("lyra") ||
+          cleanLower.includes("লায়রা") ||
+          cleanLower.includes("ওঠো") ||
+          cleanLower.includes("জেগে"))
+      ) {
+        wakeUp();
+        return;
+      }
+
+      // Check for sleep command:
+      // "lyra tumi ghomao", "lyra sleep", "tumi sleep mode e chole jao", "ঘুমাও", "স্লিপ মোডে যাও"
+      if (
+        cleanLower.includes("ghomao") ||
+        cleanLower.includes("ghumao") ||
+        cleanLower.includes("ghuma") ||
+        cleanLower.includes("ঘুমাও") ||
+        cleanLower.includes("ঘুমা") ||
+        cleanLower.includes("sleep mode") ||
+        cleanLower.includes("slip mode") ||
+        cleanLower.includes("seep mode") ||
+        cleanLower.includes("lyra sleep") ||
+        cleanLower.includes("lyra slip") ||
+        cleanLower.includes("go to sleep") ||
+        cleanLower.includes("স্লিপ মোড") ||
+        cleanLower.includes("অফ হও") ||
+        cleanLower.includes("বন্ধ হও")
+      ) {
+        goToSleep();
+        return;
+      }
+
+      // If sleeping, ignore other room sounds
+      if (isSleepingRef.current) {
+        return;
+      }
+
+      setErrorMessage(null);
+      setState("processing");
+      const localLangDetection = detectLanguage(query);
+      const chosenLang =
+        preferredLang === "auto"
+          ? localLangDetection.language === "bn"
+            ? "bn"
+            : "en"
+          : preferredLang;
+
+      setDetectedLang(localLangDetection.language);
+
+      // Add user message
+      const userMsg: VoiceMessage = {
+        id: `user-${Date.now()}`,
+        sender: "user",
+        text: query,
+        language: localLangDetection.language,
+        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+      };
+      setMessages((prev) => [...prev, userMsg]);
+
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+        const res = await fetch(`${apiUrl}/api/voice/process`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: query, language: chosenLang })
+        });
+
+        if (res.ok) {
+          const json = await res.json();
+          const reply = json.data.replyText as string;
+          const replyLang = (json.data.replyLanguage as "bn" | "en") || chosenLang;
+          const isSleep = Boolean(json.data.isSleepCommand);
+          const isWake = Boolean(json.data.isWakeCommand);
+
+          if (isSleep) {
+            setIsSleeping(true);
+            isSleepingRef.current = true;
+          } else if (isWake) {
+            setIsSleeping(false);
+            isSleepingRef.current = false;
+          }
+
+          setLastResponse(reply);
+          const lyraMsg: VoiceMessage = {
+            id: `lyra-${Date.now()}`,
+            sender: "lyra",
+            text: reply,
+            language: replyLang,
+            timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+          };
+          setMessages((prev) => [...prev, lyraMsg]);
+          speakReply(reply, replyLang);
+          return;
+        }
+      } catch (err) {
+        console.warn("Backend API query warning, using client-side fallback:", err);
+      }
+
+      // Client-side fallback
+      let reply = "";
+      if (
+        cleanLower.includes("message") ||
+        cleanLower.includes("মেসেজ") ||
+        cleanLower.includes("facebook") ||
+        cleanLower.includes("whatsapp") ||
+        cleanLower.includes("instagram") ||
+        cleanLower.includes("কে কে") ||
+        cleanLower.includes("কার মেসেজ")
+      ) {
+        reply =
+          chosenLang === "bn"
+            ? "আপনার কোনো সোশ্যাল মিডিয়া বা মেসেজিং অ্যাকাউন্ট এখনো যুক্ত করা হয়নি, তাই এই মুহূর্তে কোনো নতুন মেসেজ নেই।"
+            : "None of your social media or messaging accounts are connected yet, so there are no incoming messages.";
+      } else {
+        reply =
+          chosenLang === "bn"
+            ? `আমি আপনার কথাটি শুনেছি: "${query}"। আমি আপনার নির্দেশ কার্যকর করতে সম্পূর্ণ প্রস্তুত!`
+            : `I heard you clearly: "${query}". I am ready to assist you!`;
+      }
+
+      setLastResponse(reply);
+      const lyraMsg: VoiceMessage = {
+        id: `lyra-${Date.now()}`,
+        sender: "lyra",
+        text: reply,
+        language: chosenLang,
+        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+      };
+      setMessages((prev) => [...prev, lyraMsg]);
+      speakReply(reply, chosenLang);
+    },
+    [preferredLang, speakReply, goToSleep, wakeUp]
+  );
+
+  // Auto Voice Start Function with getUserMedia permission
+  const enableAutoVoice = useCallback(async () => {
+    const granted = await speechRecognizer.requestMicPermission();
+    setMicPermissionGranted(granted);
+    if (!granted) {
+      setErrorMessage("Microphone permission denied. Please click the lock icon in your browser address bar and allow microphone.");
+      return;
+    }
+
+    setIsAutoVoiceActive(true);
+    setErrorMessage(null);
+    setState("listening");
+
+    speechRecognizer.setLanguage(preferredLang);
+    speechRecognizer.start(
+      {
+        onStart: () => {
+          if (!isSpeakingRef.current && !isSleepingRef.current) {
+            setState("listening");
+          }
+        },
+        onResult: (text) => {
+          if (!isSpeakingRef.current) {
+            setTranscript(text);
+          }
+        },
+        onError: (err) => {
+          console.warn("Speech recognition warning:", err);
+          if (err.includes("denied")) {
+            setErrorMessage(err);
+          }
+        },
+        onEnd: (finalTranscript) => {
+          if (isSpeakingRef.current || isSleepingRef.current) return;
+          if (finalTranscript && finalTranscript.trim()) {
+            hasProcessedRef.current = true;
+            void processQuery(finalTranscript);
+          }
+        }
+      },
+      true // Auto continuous loop
+    );
+  }, [preferredLang, processQuery]);
+
+  // Initialize auto voice on load
+  useEffect(() => {
+    void enableAutoVoice();
+
+    return () => {
+      speechRecognizer.stop();
+    };
+  }, [enableAutoVoice]);
+
+  const stopSpeaking = useCallback(() => {
+    softVoiceSynthesizer.stop();
+    if (isSleepingRef.current) {
+      setState("sleeping");
+    } else {
+      setState("listening");
+    }
+  }, []);
+
+  const testVoice = useCallback(
+    (lang: "bn" | "en" = "bn") => {
+      const sampleText =
+        lang === "bn"
+          ? "হ্যালো! আমি লায়রা। আমার সাউন্ড ইঞ্জিন এবং ভয়েস সম্পূর্ণ সক্রিয় ও প্রস্তুত আছে।"
+          : "Hello! I am LYRA. My voice engine and audio channels are fully online and ready.";
+      setLastResponse(sampleText);
+      speakReply(sampleText, lang);
+    },
+    [speakReply]
+  );
+
+  return {
+    state,
+    isSleeping,
+    transcript,
+    lastResponse,
+    messages,
+    detectedLang,
+    preferredLang,
+    setPreferredLang,
+    errorMessage,
+    isMuted,
+    setIsMuted,
+    audioLevels,
+    isAutoVoiceActive,
+    micPermissionGranted,
+    enableAutoVoice,
+    goToSleep,
+    wakeUp,
+    processQuery,
+    speakReply,
+    stopSpeaking,
+    testVoice
+  };
+}

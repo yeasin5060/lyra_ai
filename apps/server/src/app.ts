@@ -8,6 +8,7 @@ import { env } from "./config/env.js";
 import { auth } from "./lib/auth.js";
 import healthRoutes from "./modules/health/health.routes.js";
 import voiceRoutes from "./modules/voice/voice.routes.js";
+import mediaRoutes from "./modules/media/media.routes.js";
 import { errorHandler } from "./middleware/error-handler.js";
 
 const app: Express = express();
@@ -48,6 +49,7 @@ app.get("/", (_req, res) => {
 
 app.use("/api/health", healthRoutes);
 app.use("/api/voice", voiceRoutes);
+app.use("/api/media", mediaRoutes);
 app.use(errorHandler);
 
 export default app;
