@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { CloudSun, Sparkles } from "lucide-react";
+import { CloudSun } from "lucide-react";
 
 interface Props {
   assistantName?: string;
@@ -13,12 +13,12 @@ export default function HudDigitalClock({
   isSleeping = false
 }: Props) {
   const [timeStr, setTimeStr] = useState({
-    hours: "00",
-    minutes: "00",
-    seconds: "00"
+    hours: "22",
+    minutes: "41",
+    seconds: "58"
   });
-  const [greeting, setGreeting] = useState("Good day, Sir.");
-  const [dateStr, setDateStr] = useState("");
+  const [greeting, setGreeting] = useState("Good evening,");
+  const [dateStr, setDateStr] = useState("Sunday, 23 November 2026");
 
   useEffect(() => {
     const updateTime = () => {
@@ -28,19 +28,17 @@ export default function HudDigitalClock({
       const s = String(now.getSeconds()).padStart(2, "0");
       setTimeStr({ hours: h, minutes: m, seconds: s });
 
-      // Dynamic time greeting
       const hourNum = now.getHours();
       if (hourNum >= 5 && hourNum < 12) {
-        setGreeting("Good morning, Sir.");
+        setGreeting("Good morning,");
       } else if (hourNum >= 12 && hourNum < 17) {
-        setGreeting("Good afternoon, Sir.");
+        setGreeting("Good afternoon,");
       } else if (hourNum >= 17 && hourNum < 22) {
-        setGreeting("Good evening, Sir.");
+        setGreeting("Good evening,");
       } else {
-        setGreeting("Good night, Sir.");
+        setGreeting("Good night,");
       }
 
-      // Date string formatted
       const options: Intl.DateTimeFormatOptions = {
         weekday: "long",
         day: "numeric",
@@ -56,44 +54,31 @@ export default function HudDigitalClock({
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center text-center select-none pt-2 pb-4">
-      {/* Top Cyber Accent Lines */}
-      <div className="flex items-center gap-3 opacity-60">
-        <div className="h-[1px] w-16 bg-gradient-to-r from-transparent via-cyan-400 to-transparent" />
-        <span className="flex items-center gap-1 text-[10px] font-mono tracking-[0.3em] uppercase text-cyan-300">
-          <Sparkles size={11} className="text-cyan-400 animate-pulse" />
-          QUANTUM NEURAL INTERFACE
-        </span>
-        <div className="h-[1px] w-16 bg-gradient-to-r from-transparent via-cyan-400 to-transparent" />
-      </div>
-
-      {/* Main Large Sci-Fi Clock */}
-      <div className="mt-1 flex items-baseline justify-center font-mono font-black tracking-tight text-white drop-shadow-[0_0_35px_rgba(6,182,212,0.5)]">
-        <span className="text-4xl sm:text-5xl lg:text-6xl text-white tracking-widest">
+    <div className="flex flex-col items-center justify-center text-center select-none pt-1">
+      {/* 1. Large Digital Clock: 22:41:58 (Exact TV Photo Match) */}
+      <div className="flex items-baseline justify-center font-mono font-black tracking-tight text-white drop-shadow-[0_0_40px_rgba(34,197,94,0.35)]">
+        <span className="text-4xl sm:text-5xl lg:text-[3.5rem] leading-none text-white font-extrabold tracking-tight">
           {timeStr.hours}:{timeStr.minutes}
         </span>
-        <span className="ml-1 text-2xl sm:text-3xl lg:text-4xl text-cyan-400 font-extrabold animate-pulse">
+        <span className="ml-1 text-2xl sm:text-3xl lg:text-[2.2rem] leading-none text-emerald-400 font-black">
           :{timeStr.seconds}
         </span>
       </div>
 
-      {/* Greeting Subtitle (Exact Video match!) */}
-      <div className="mt-1 flex items-center gap-2">
-        <h2 className="text-sm sm:text-base font-semibold text-gray-200 tracking-wide">
-          {isSleeping ? "Shh... LYRA is currently sleeping" : `${greeting} ${assistantName} at your service`}
-        </h2>
-        {!isSleeping && (
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
-        )}
+      {/* 2. Subtitle: Good evening, Sir. LYRA at your service. (Sir highlighted in green) */}
+      <div className="mt-1 flex items-center justify-center gap-1.5 text-xs sm:text-sm font-medium text-gray-200">
+        <span>{greeting}</span>
+        <span className="text-emerald-400 font-bold">Sir.</span>
+        <span>{assistantName} at your service.</span>
       </div>
 
-      {/* Date & Weather Ribbon */}
-      <div className="mt-1.5 flex items-center gap-2 text-xs text-gray-400 font-mono">
-        <span>{dateStr || "Today"}</span>
+      {/* 3. Sub-subtitle: Sunday, 23 November 2026 • Rangpur 21°C ⛅ */}
+      <div className="mt-0.5 flex items-center justify-center gap-1.5 text-[11px] text-gray-400 font-mono">
+        <span>{dateStr}</span>
         <span>•</span>
-        <div className="flex items-center gap-1 text-emerald-400">
-          <CloudSun size={13} />
-          <span>Dhaka 28°C • Optimal</span>
+        <div className="flex items-center gap-1 text-gray-300">
+          <span>Rangpur 21°C</span>
+          <span className="text-amber-300 text-xs">⛅</span>
         </div>
       </div>
     </div>

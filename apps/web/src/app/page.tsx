@@ -23,7 +23,7 @@ import { useVoiceAssistant } from "@/hooks/use-voice-assistant";
 import { cyberAudio } from "@/components/jarvis/cyber-audio-engine";
 
 export default function Home() {
-  const [hasLaunched, setHasLaunched] = useState(false);
+  const [hasLaunched, setHasLaunched] = useState(true);
   const [activeView, setActiveView] = useState<"cockpit" | "grid">("cockpit");
   const [apiStatus, setApiStatus] = useState("Checking...");
 
@@ -40,6 +40,11 @@ export default function Home() {
     testVoice,
     enableAutoVoice
   } = useVoiceAssistant();
+
+  // Auto-enable voice on mount
+  useEffect(() => {
+    enableAutoVoice();
+  }, [enableAutoVoice]);
 
   // Check health and database status
   useEffect(() => {
@@ -89,27 +94,27 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-[#04030a] text-white font-sans selection:bg-cyan-500/30 selection:text-white">
-      {/* 1. CINEMATIC BOOT SCREEN (Video Signature opening) */}
+    <div className="min-h-screen bg-[#020604] text-white font-sans selection:bg-emerald-500/30 selection:text-white">
+      {/* 1. CINEMATIC BOOT SCREEN (Available when user returns to standby) */}
       {!hasLaunched ? (
         <JarvisBootScreen onLaunch={handleLaunchFromBoot} assistantName="LYRA" />
       ) : (
         <div className="relative flex flex-col min-h-screen">
-          {/* Top Floating View Switcher Bar */}
-          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-40 hidden sm:flex items-center gap-1 rounded-2xl border border-white/10 bg-[#090814]/80 p-1 backdrop-blur-xl shadow-lg">
+          {/* Subtle View Switcher in Top Bar */}
+          <div className="absolute top-2 left-1/2 -translate-x-1/2 z-40 hidden sm:flex items-center gap-1 rounded-2xl border border-emerald-500/20 bg-[#06120b]/80 p-0.5 backdrop-blur-xl shadow-lg opacity-40 hover:opacity-100 transition-opacity">
             <button
               onClick={() => {
                 cyberAudio.playNodeClick();
                 setActiveView("cockpit");
               }}
-              className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition ${
+              className={`flex items-center gap-1.5 rounded-xl px-2.5 py-1 text-[10px] font-semibold transition ${
                 activeView === "cockpit"
-                  ? "bg-gradient-to-r from-cyan-600 to-emerald-600 text-white shadow-md shadow-cyan-900/40"
+                  ? "bg-emerald-500 text-black font-bold shadow-md shadow-emerald-500/30"
                   : "text-gray-400 hover:text-white"
               }`}
             >
-              <Sparkles size={13} />
-              <span>Cockpit HUD (Video Mode)</span>
+              <Sparkles size={11} />
+              <span>TV Cockpit</span>
             </button>
 
             <button
@@ -117,14 +122,14 @@ export default function Home() {
                 cyberAudio.playNodeClick();
                 setActiveView("grid");
               }}
-              className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition ${
+              className={`flex items-center gap-1.5 rounded-xl px-2.5 py-1 text-[10px] font-semibold transition ${
                 activeView === "grid"
-                  ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md shadow-violet-900/40"
+                  ? "bg-emerald-500 text-black font-bold shadow-md shadow-emerald-500/30"
                   : "text-gray-400 hover:text-white"
               }`}
             >
-              <LayoutGrid size={13} />
-              <span>Full Command Hub View</span>
+              <LayoutGrid size={11} />
+              <span>Command Hub</span>
             </button>
           </div>
 

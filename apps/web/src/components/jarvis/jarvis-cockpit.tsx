@@ -2,21 +2,16 @@
 
 import React, { useState } from "react";
 import {
+  Gamepad2,
+  MessageSquare,
   Maximize,
   Minimize,
-  Moon,
   Radio,
-  Settings,
-  Sparkles,
-  Volume2,
-  VolumeX,
-  Newspaper,
   Share2,
-  ShieldCheck,
-  Globe,
+  Newspaper,
   Camera,
   Phone,
-  MessageSquare
+  Sparkles
 } from "lucide-react";
 import QuantumNeuralOrb from "./quantum-neural-orb";
 import SatelliteConstellation from "./satellite-constellation";
@@ -28,7 +23,6 @@ import LiveNewsReaderModal, { type NewsItem } from "./live-news-reader-modal";
 import SocialAccountsModal from "./social-accounts-modal";
 import LyraVisionHud from "./lyra-vision-hud";
 import LyraSecureLinkCall from "./lyra-secure-link-call";
-import CenterMessagesCard from "./center-messages-card";
 import { cyberAudio } from "./cyber-audio-engine";
 
 interface Props {
@@ -60,8 +54,6 @@ export default function JarvisCockpit({
   onReturnToBoot,
   dbStatus = "Connected"
 }: Props) {
-  const [themeColor, setThemeColor] = useState<"emerald" | "cyan" | "violet">("emerald");
-  const [soundEnabled, setSoundEnabled] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Modals
@@ -70,7 +62,7 @@ export default function JarvisCockpit({
   const [isVisionModalOpen, setIsVisionModalOpen] = useState(false);
   const [visionInitialMode, setVisionInitialMode] = useState<"auto" | "brother" | "face">("auto");
   const [isSecureCallOpen, setIsSecureCallOpen] = useState(false);
-  const [isCenterMessagesOpen, setIsCenterMessagesOpen] = useState(true);
+
   const [newsArticles, setNewsArticles] = useState<NewsItem[]>([
     {
       id: "prothomalo-1",
@@ -99,13 +91,6 @@ export default function JarvisCockpit({
     }
   };
 
-  const handleToggleSound = () => {
-    const next = !soundEnabled;
-    setSoundEnabled(next);
-    cyberAudio.setSoundEnabled(next);
-    if (next) cyberAudio.playWakeChime();
-  };
-
   const handleOrbClick = () => {
     cyberAudio.playWakeChime();
     onMicClick?.();
@@ -121,26 +106,17 @@ export default function JarvisCockpit({
           setNewsArticles(json.data.articles);
         }
       }
-    } catch {
-      // Fallback already in state
-    }
+    } catch {}
     setIsNewsModalOpen(true);
   };
 
-  const handleSelectNode = (prompt: string) => {
-    if (prompt.includes("ওয়েব ব্রাউজার") || prompt.includes("সার্চ")) {
+  const handleSelectNode = (prompt: string, nodeId: string) => {
+    if (nodeId === "website") {
       void fetchLiveNews();
-    } else if (prompt.includes("সোশ্যাল")) {
+    } else if (nodeId === "social") {
       setIsSocialModalOpen(true);
-    } else if (prompt.includes("ইনবক্স") || prompt.includes("মেসেজ")) {
-      setIsCenterMessagesOpen(true);
-    } else if (
-      prompt.includes("ক্যামেরা") ||
-      prompt.includes("ভিশন") ||
-      prompt.includes("সামনে কে")
-    ) {
-      setVisionInitialMode("auto");
-      setIsVisionModalOpen(true);
+    } else if (nodeId === "today") {
+      void fetchLiveNews();
     }
     onSubmitQuery?.(prompt);
   };
@@ -153,237 +129,124 @@ export default function JarvisCockpit({
       clean.includes("vision") ||
       clean.includes("ভিশন") ||
       clean.includes("সামনে কে") ||
-      clean.includes("কে আছে দেখো") ||
-      clean.includes("ছোট ভাই") ||
-      clean.includes("ভাইকে চেনো")
+      clean.includes("ছোট ভাই")
     ) {
-      if (clean.includes("ছোট ভাই") || clean.includes("ভাই")) {
-        setVisionInitialMode("brother");
-      } else {
-        setVisionInitialMode("auto");
-      }
+      setVisionInitialMode(clean.includes("ছোট ভাই") ? "brother" : "auto");
       setIsVisionModalOpen(true);
     } else if (
       clean.includes("call") ||
       clean.includes("কল দাও") ||
-      clean.includes("কল করো") ||
-      clean.includes("ফোন দাও") ||
-      clean.includes("ফোন করো") ||
       clean.includes("ভাবি") ||
-      clean.includes("bhabi") ||
-      clean.includes("secure link") ||
-      clean.includes("সিকিউর লিংক")
+      clean.includes("secure link")
     ) {
       setIsSecureCallOpen(true);
-    } else if (
-      clean.includes("message") ||
-      clean.includes("মেসেজ") ||
-      clean.includes("ইনবক্স") ||
-      clean.includes("চ্যাট")
-    ) {
-      setIsCenterMessagesOpen(true);
+    } else if (clean.includes("social") || clean.includes("ফেসবুক") || clean.includes("লিঙ্কডইন")) {
+      setIsSocialModalOpen(true);
     }
     onSubmitQuery?.(prompt);
   };
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-[#04030a] text-white flex flex-col justify-between p-4 sm:p-6 lg:p-8 select-none">
-      {/* Sci-Fi Quantum Hologram Background Grid & Energy Field */}
+    <div className="relative min-h-screen w-full overflow-hidden bg-[#020604] text-white flex flex-col justify-between p-3 sm:p-5 lg:p-6 select-none font-sans">
+      {/* 1. Deep Cybernetic Energy Field & Ambient Aura */}
       <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-        {/* Central Radial Atmospheric Glows */}
-        <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[50rem] w-[50rem] rounded-full blur-[160px] opacity-25 transition-colors duration-1000"
-          style={{
-            backgroundColor:
-              themeColor === "emerald"
-                ? "#10b981"
-                : themeColor === "cyan"
-                ? "#06b6d4"
-                : "#8b5cf6"
-          }}
-        />
+        {/* Central Radial Emerald Plasma Glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[45rem] w-[45rem] rounded-full blur-[160px] bg-emerald-500/15" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[22rem] w-[22rem] rounded-full blur-[100px] bg-lime-400/20" />
 
-        {/* Ambient Top & Bottom Flares */}
-        <div className="absolute top-0 left-1/3 h-[25rem] w-[25rem] rounded-full bg-cyan-600/10 blur-[130px]" />
-        <div className="absolute bottom-0 right-1/3 h-[25rem] w-[25rem] rounded-full bg-emerald-600/10 blur-[140px]" />
+        {/* Top & Bottom Ambient Vignette Flares */}
+        <div className="absolute top-0 left-1/4 h-[20rem] w-[20rem] rounded-full bg-emerald-700/10 blur-[130px]" />
+        <div className="absolute bottom-0 right-1/4 h-[20rem] w-[20rem] rounded-full bg-lime-600/10 blur-[140px]" />
 
-        {/* Cyberpunk Concentric Target HUD Rings */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[34rem] w-[34rem] rounded-full border border-white/[0.04] pointer-events-none" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[48rem] w-[48rem] rounded-full border border-dashed border-white/[0.03] pointer-events-none" />
+        {/* Subtle Cyber Target HUD Circles */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[32rem] w-[48rem] rounded-full border border-emerald-500/[0.04] pointer-events-none" />
       </div>
 
-      {/* Top Cockpit Header Bar */}
-      <header className="relative z-30 flex items-center justify-between gap-4 border-b border-white/10 pb-3">
+      {/* 2. Top Bar matching TV Screen: Center Clock & Right Control Icons */}
+      <header className="relative z-30 flex items-start justify-between gap-4">
         {/* Left Brand Badge */}
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-cyan-600 to-emerald-600 font-black text-white shadow-lg shadow-cyan-600/30 border border-cyan-400/30">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-tr from-emerald-600 to-lime-500 font-black text-black shadow-lg shadow-emerald-500/20">
             L
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-sm font-extrabold tracking-widest text-white uppercase">
+            <div className="flex items-center gap-1.5">
+              <h1 className="text-xs font-black tracking-widest text-white uppercase font-mono">
                 LYRA AI
               </h1>
               <span className="rounded bg-emerald-500/20 px-1.5 py-0.2 text-[9px] font-bold text-emerald-300 border border-emerald-500/30">
-                YEASIN MUNSHI CORE
+                YEASIN MUNSHI
               </span>
             </div>
-            <p className="text-[10px] text-gray-400 font-mono">WORLD & SOCIAL INTELLIGENCE</p>
+            <p className="text-[9px] text-emerald-400/80 font-mono">NEURAL COCKPIT V4.16</p>
           </div>
         </div>
 
-        {/* Top Digital Sci-Fi Clock */}
-        <div className="hidden md:block flex-1 max-w-xl">
+        {/* Center Digital Clock (22:41:58 • Good evening, Sir • Rangpur 21°C) */}
+        <div className="flex-1 max-w-xl">
           <HudDigitalClock assistantName="LYRA" isSleeping={isSleeping} />
         </div>
 
-        {/* Right HUD Controls: Theme, Sound, Fullscreen, Standby, News & Social */}
+        {/* Right HUD Control Icons matching TV Photo: Gamepad, Chat, Fullscreen, Avatar */}
         <div className="flex items-center gap-2">
-          {/* Live News Trigger */}
+          {/* Gamepad / Matrix Button */}
           <button
+            type="button"
+            onClick={() => {
+              cyberAudio.playNodeClick();
+              setIsVisionModalOpen(true);
+            }}
+            className="flex h-8 w-8 items-center justify-center rounded-xl border border-emerald-500/30 bg-[#06180e]/80 text-emerald-300 hover:bg-emerald-500/20 transition shadow-sm"
+            title="LYRA Optical Vision"
+          >
+            <Gamepad2 size={15} />
+          </button>
+
+          {/* Chat / News Button */}
+          <button
+            type="button"
             onClick={() => {
               cyberAudio.playNodeClick();
               void fetchLiveNews();
             }}
-            className="flex items-center gap-1.5 rounded-xl border border-cyan-500/30 bg-cyan-500/15 px-3 py-1.5 text-xs font-semibold text-cyan-200 transition hover:bg-cyan-500/30 shadow-sm"
-            title="Open Live News & World Feed"
+            className="flex h-8 w-8 items-center justify-center rounded-xl border border-emerald-500/30 bg-[#06180e]/80 text-emerald-300 hover:bg-emerald-500/20 transition shadow-sm"
+            title="Live News Reader"
           >
-            <Newspaper size={13} />
-            <span className="hidden sm:inline">লাইভ নিউজ</span>
+            <MessageSquare size={15} />
           </button>
 
-          {/* Yeasin Munshi Social Accounts Vault */}
+          {/* Fullscreen Expand Button [ ] */}
           <button
+            type="button"
+            onClick={toggleFullscreen}
+            className="flex h-8 w-8 items-center justify-center rounded-xl border border-emerald-500/30 bg-[#06180e]/80 text-emerald-300 hover:bg-emerald-500/20 transition shadow-sm"
+            title="Toggle TV Fullscreen"
+          >
+            {isFullscreen ? <Minimize size={15} /> : <Maximize size={15} />}
+          </button>
+
+          {/* User Status Avatar Pill */}
+          <button
+            type="button"
             onClick={() => {
               cyberAudio.playNodeClick();
               setIsSocialModalOpen(true);
             }}
-            className="flex items-center gap-1.5 rounded-xl border border-violet-500/30 bg-violet-500/15 px-3 py-1.5 text-xs font-semibold text-violet-200 transition hover:bg-violet-500/30 shadow-sm"
-            title="Yeasin Munshi Social Accounts"
+            className="flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-950/60 py-1 pl-1 pr-2.5 text-xs text-white shadow-sm hover:border-emerald-400 transition"
+            title="Yeasin Munshi Profile"
           >
-            <Share2 size={13} />
-            <span className="hidden sm:inline">সোশ্যাল ভল্ট</span>
+            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-tr from-emerald-500 to-lime-400 font-bold text-[10px] text-black">
+              Y
+            </div>
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
           </button>
-
-          {/* LYRA Multimodal Vision & Face Recognition (Zara Style Eye) */}
-          <button
-            onClick={() => {
-              cyberAudio.playNodeClick();
-              setVisionInitialMode("auto");
-              setIsVisionModalOpen(true);
-            }}
-            className="flex items-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/15 px-3 py-1.5 text-xs font-semibold text-emerald-200 transition hover:bg-emerald-500/30 shadow-sm"
-            title="Open LYRA Optical Vision & Face Recognition"
-          >
-            <Camera size={13} />
-            <span className="hidden sm:inline">লায়রা ভিশন</span>
-          </button>
-
-          {/* Floating Messages Center Card Toggle (Video 3 Match) */}
-          <button
-            onClick={() => {
-              cyberAudio.playNodeClick();
-              setIsCenterMessagesOpen(!isCenterMessagesOpen);
-            }}
-            className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition shadow-sm ${
-              isCenterMessagesOpen
-                ? "border-emerald-500/50 bg-emerald-500/25 text-emerald-300 shadow-emerald-900/30"
-                : "border-white/10 bg-white/5 text-gray-300 hover:bg-white/10"
-            }`}
-            title="Toggle Center Messages Card"
-          >
-            <MessageSquare size={13} className="text-emerald-400" />
-            <span className="hidden sm:inline">মেসেজ (৪৫৫)</span>
-          </button>
-
-          {/* Secure Link Voice Call (Video 4 Match: LYRA SECURE LINK) */}
-          <button
-            onClick={() => {
-              cyberAudio.playNodeClick();
-              setIsSecureCallOpen(true);
-            }}
-            className="flex items-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/15 px-3 py-1.5 text-xs font-semibold text-emerald-200 transition hover:bg-emerald-500/30 shadow-sm"
-            title="Open LYRA Secure Link Call to Bhabi"
-          >
-            <Phone size={13} className="text-emerald-400" />
-            <span className="hidden sm:inline">সিকিউর কল</span>
-          </button>
-
-          {/* Theme Palette Switcher */}
-          <div className="flex items-center gap-1 rounded-xl bg-white/5 p-1 border border-white/10">
-            <button
-              onClick={() => setThemeColor("emerald")}
-              className={`h-6 w-6 rounded-lg transition-all ${
-                themeColor === "emerald"
-                  ? "bg-emerald-500 shadow-md shadow-emerald-500/40 scale-105"
-                  : "bg-emerald-950/60 opacity-60 hover:opacity-100"
-              }`}
-              title="Emerald Theme (Video Match)"
-            />
-            <button
-              onClick={() => setThemeColor("cyan")}
-              className={`h-6 w-6 rounded-lg transition-all ${
-                themeColor === "cyan"
-                  ? "bg-cyan-500 shadow-md shadow-cyan-500/40 scale-105"
-                  : "bg-cyan-950/60 opacity-60 hover:opacity-100"
-              }`}
-              title="Cyan Theme"
-            />
-            <button
-              onClick={() => setThemeColor("violet")}
-              className={`h-6 w-6 rounded-lg transition-all ${
-                themeColor === "violet"
-                  ? "bg-violet-500 shadow-md shadow-violet-500/40 scale-105"
-                  : "bg-violet-950/60 opacity-60 hover:opacity-100"
-              }`}
-              title="Violet Theme"
-            />
-          </div>
-
-          {/* Sound FX Toggle */}
-          <button
-            onClick={handleToggleSound}
-            className="flex h-8 w-8 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-gray-300 transition hover:bg-white/10"
-            title={soundEnabled ? "Disable UI Sound Effects" : "Enable UI Sound Effects"}
-          >
-            {soundEnabled ? <Volume2 size={14} className="text-emerald-400" /> : <VolumeX size={14} />}
-          </button>
-
-          {/* Fullscreen Toggle */}
-          <button
-            onClick={toggleFullscreen}
-            className="flex h-8 w-8 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-gray-300 transition hover:bg-white/10"
-            title="Toggle Fullscreen Mode"
-          >
-            {isFullscreen ? <Minimize size={14} /> : <Maximize size={14} />}
-          </button>
-
-          {/* Standby / Boot Screen Trigger */}
-          {onReturnToBoot && (
-            <button
-              onClick={() => {
-                cyberAudio.playNodeClick();
-                onReturnToBoot();
-              }}
-              className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-2.5 py-1.5 text-xs font-semibold text-gray-300 transition hover:bg-white/10"
-              title="Return to Standby Screen"
-            >
-              <Radio size={13} />
-              <span className="hidden sm:inline">Standby</span>
-            </button>
-          )}
         </div>
       </header>
 
-      {/* Mobile Clock (shows on small screens only) */}
-      <div className="md:hidden mt-2">
-        <HudDigitalClock assistantName="LYRA" isSleeping={isSleeping} />
-      </div>
-
-      {/* Central Interactive Battle Station / Matrix Area */}
-      <main className="relative z-10 flex-1 flex flex-col lg:flex-row items-center justify-between gap-6 my-auto w-full max-w-7xl mx-auto py-4">
-        {/* Left HUD Panel: LIVE CORE */}
-        <div className="w-full lg:w-72 xl:w-80 shrink-0 order-2 lg:order-1">
+      {/* 3. Central Cockpit Matrix: Left Card, Center Plasma Orb with 10 Nodes, Right Card */}
+      <main className="relative z-10 flex-1 flex flex-col lg:flex-row items-center justify-between gap-4 my-auto w-full max-w-[1500px] mx-auto py-2">
+        {/* Left Side Card: LYRA CORE */}
+        <div className="w-full lg:w-[300px] shrink-0 order-2 lg:order-1 flex justify-center lg:justify-start">
           <LeftCoreHud
             state={state}
             isSleeping={isSleeping}
@@ -391,48 +254,40 @@ export default function JarvisCockpit({
             onTestVoice={onTestVoice}
             isMuted={isMuted}
             onToggleMute={onToggleMute}
+            onOpenNews={fetchLiveNews}
+            onOpenSocial={() => setIsSocialModalOpen(true)}
           />
         </div>
 
-        {/* Center Arena: Quantum Neural Orb & 8 Orbiting Satellite Nodes */}
-        <div className="relative flex-1 flex items-center justify-center min-h-[380px] sm:min-h-[460px] lg:min-h-[500px] w-full order-1 lg:order-2">
-          {/* Satellite Constellation with 8 Orbiting Nodes & Laser Circuit Connectors */}
+        {/* Center Arena: 10 Orbiting Satellite Nodes & Electric Green Plasma Orb */}
+        <div className="relative flex-1 flex items-center justify-center min-h-[380px] sm:min-h-[440px] lg:min-h-[480px] w-full order-1 lg:order-2">
+          {/* 10 Orbiting Nodes with Laser Circuit Connectors */}
           <SatelliteConstellation
-            orbitRadius={190}
+            orbitRadius={200}
             onSelectNode={handleSelectNode}
-            themeColor={themeColor}
           />
 
-          {/* Central Quantum Neural Orb (Canvas Matrix) */}
+          {/* Central Organic Electric Green Plasma Energy Orb */}
           <div className="relative z-20">
             <QuantumNeuralOrb
               state={state}
-              size={210}
-              themeColor={themeColor}
+              size={290}
               onClick={handleOrbClick}
             />
           </div>
-
-          {/* Floating Inbound Messages Center Card (Exact Video 3 Match!) */}
-          {isCenterMessagesOpen && (
-            <div className="absolute right-0 sm:right-2 lg:right-6 top-1/2 -translate-y-1/2 z-30 max-w-[280px] sm:max-w-xs shadow-2xl">
-              <CenterMessagesCard
-                isOpen={isCenterMessagesOpen}
-                onClose={() => setIsCenterMessagesOpen(false)}
-                onSelectChat={(text) => handleUserQuery(text)}
-              />
-            </div>
-          )}
         </div>
 
-        {/* Right HUD Panel: AI BRAIN - System Stream */}
-        <div className="w-full lg:w-72 xl:w-80 shrink-0 order-3">
-          <RightStreamHud dbStatus={dbStatus} />
+        {/* Right Side Card: AI BRAIN & Model Latency Gauges */}
+        <div className="w-full lg:w-[300px] shrink-0 order-3 flex justify-center lg:justify-end">
+          <RightStreamHud
+            dbStatus={dbStatus}
+            onSelectChat={(text) => handleUserQuery(text)}
+          />
         </div>
       </main>
 
-      {/* Bottom Subtitle & Interactive Voice Console Dock */}
-      <footer className="relative z-30 pt-2 pb-2">
+      {/* 4. Bottom Area: Subtitle Speech Text & Floating Mic Console Pill */}
+      <footer className="relative z-30 pt-1 pb-2">
         <BottomSubtitleDock
           state={state}
           transcript={transcript}
@@ -443,7 +298,7 @@ export default function JarvisCockpit({
         />
       </footer>
 
-      {/* Modals for Live News, Social Accounts & LYRA Vision */}
+      {/* Modals for Live News, Social Accounts, Vision & Secure Call */}
       <LiveNewsReaderModal
         isOpen={isNewsModalOpen}
         onClose={() => setIsNewsModalOpen(false)}

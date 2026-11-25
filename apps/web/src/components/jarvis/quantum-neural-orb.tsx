@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import { motion } from "framer-motion";
 
 interface Props {
   state?: "idle" | "listening" | "processing" | "speaking" | "sleeping";
@@ -10,34 +9,14 @@ interface Props {
   onClick?: () => void;
 }
 
-const COLOR_PROFILES = {
-  emerald: {
-    primary: "rgb(16, 185, 129)",
-    secondary: "rgb(52, 211, 153)",
-    glow: "rgba(16, 185, 129, 0.4)",
-    core: "rgba(6, 78, 59, 0.8)",
-    pulse: "#10b981"
-  },
-  cyan: {
-    primary: "rgb(6, 182, 212)",
-    secondary: "rgb(103, 232, 249)",
-    glow: "rgba(6, 182, 212, 0.4)",
-    core: "rgba(22, 78, 99, 0.8)",
-    pulse: "#06b6d4"
-  },
-  violet: {
-    primary: "rgb(139, 92, 246)",
-    secondary: "rgb(192, 132, 252)",
-    glow: "rgba(139, 92, 246, 0.4)",
-    core: "rgba(76, 29, 149, 0.8)",
-    pulse: "#8b5cf6"
-  }
-};
-
+/**
+ * Organic Electric Green Plasma Energy Orb (Exact Match to TV Screen Photo!)
+ * Renders undulating, swirling, organic electric plasma filaments that pulsate
+ * with living intelligence in vivid neon emerald/lime green.
+ */
 export default function QuantumNeuralOrb({
   state = "idle",
-  size = 280,
-  themeColor = "emerald",
+  size = 320,
   onClick
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -46,8 +25,6 @@ export default function QuantumNeuralOrb({
   const isListening = state === "listening";
   const isSleeping = state === "sleeping";
   const isProcessing = state === "processing";
-
-  const colors = COLOR_PROFILES[isSleeping ? "cyan" : themeColor];
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -58,76 +35,74 @@ export default function QuantumNeuralOrb({
     let animationFrameId: number;
     let time = 0;
 
-    // Particle nodes for orbital swarm
-    const particleCount = 42;
-    const particles: { angle: number; radius: number; speed: number; size: number; alpha: number }[] = [];
-    for (let i = 0; i < particleCount; i++) {
-      particles.push({
-        angle: Math.random() * Math.PI * 2,
-        radius: (size * 0.35) + Math.random() * (size * 0.22),
-        speed: (Math.random() * 0.015 + 0.005) * (Math.random() > 0.5 ? 1 : -1),
-        size: Math.random() * 2.2 + 1,
-        alpha: Math.random() * 0.7 + 0.3
+    // Organic filament lines configuration
+    const filamentCount = isSleeping ? 18 : isSpeaking ? 34 : 26;
+    const filaments: Array<{
+      speed: number;
+      phase: number;
+      frequency: number;
+      amplitude: number;
+      layer: number;
+    }> = [];
+
+    for (let i = 0; i < filamentCount; i++) {
+      filaments.push({
+        speed: (Math.random() * 0.008 + 0.004) * (i % 2 === 0 ? 1 : -1),
+        phase: Math.random() * Math.PI * 2,
+        frequency: Math.floor(Math.random() * 3) + 3,
+        amplitude: Math.random() * 8 + 4,
+        layer: (i / filamentCount)
       });
     }
 
+    // Particle nodes for ambient dust
+    const particles = Array.from({ length: 30 }).map(() => ({
+      angle: Math.random() * Math.PI * 2,
+      radius: (size * 0.28) + Math.random() * (size * 0.18),
+      speed: (Math.random() * 0.01 + 0.003) * (Math.random() > 0.5 ? 1 : -1),
+      size: Math.random() * 2 + 0.8,
+      alpha: Math.random() * 0.6 + 0.3
+    }));
+
     const render = () => {
-      time += isSleeping ? 0.01 : isSpeaking ? 0.045 : isListening ? 0.035 : 0.02;
+      time += isSleeping ? 0.008 : isSpeaking ? 0.035 : isListening ? 0.025 : 0.016;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       const cx = canvas.width / 2;
       const cy = canvas.height / 2;
-      const baseRadius = (size * 0.36);
+      const baseRadius = size * 0.34;
+      const intensity = isSpeaking ? 1.35 : isListening ? 1.2 : isSleeping ? 0.5 : 1.0;
 
-      // Dynamic energy intensity factor
-      const intensity = isSpeaking ? 1.4 : isListening ? 1.25 : isSleeping ? 0.6 : 1.0;
-
-      // 1. Outer Diffuse Aura Glow
-      const glowGrad = ctx.createRadialGradient(cx, cy, baseRadius * 0.2, cx, cy, baseRadius * 1.6);
-      glowGrad.addColorStop(0, colors.glow);
-      glowGrad.addColorStop(0.6, isSleeping ? "rgba(30, 27, 75, 0.2)" : colors.glow);
+      // 1. Deep Atmospheric Emerald Glow
+      const glowGrad = ctx.createRadialGradient(cx, cy, baseRadius * 0.2, cx, cy, baseRadius * 1.55);
+      glowGrad.addColorStop(0, "rgba(34, 197, 94, 0.45)");
+      glowGrad.addColorStop(0.4, "rgba(16, 185, 129, 0.25)");
+      glowGrad.addColorStop(0.8, "rgba(5, 46, 22, 0.1)");
       glowGrad.addColorStop(1, "transparent");
+
       ctx.fillStyle = glowGrad;
       ctx.beginPath();
-      ctx.arc(cx, cy, baseRadius * 1.6, 0, Math.PI * 2);
+      ctx.arc(cx, cy, baseRadius * 1.55, 0, Math.PI * 2);
       ctx.fill();
 
-      // 2. Concentric Radar Ripples
-      const rippleCount = 3;
-      for (let r = 0; r < rippleCount; r++) {
-        const ripplePhase = (time * 0.5 + r * (Math.PI * 2 / rippleCount)) % (Math.PI * 2);
-        const rippleRadius = baseRadius * 0.7 + (ripplePhase / (Math.PI * 2)) * (baseRadius * 0.85);
-        const rippleAlpha = Math.max(0, 1 - (ripplePhase / (Math.PI * 2))) * (isSleeping ? 0.1 : 0.25);
+      // 2. Outer Energy Contour Rings (Pulsing Wobbly Ring)
+      const outerRipples = 2;
+      for (let r = 0; r < outerRipples; r++) {
+        const rPhase = (time * 0.4 + r * Math.PI) % (Math.PI * 2);
+        const rRadius = baseRadius * 1.05 + Math.sin(rPhase) * 6;
+        const rAlpha = (Math.sin(rPhase) * 0.2 + 0.2) * (isSleeping ? 0.3 : 0.7);
 
-        ctx.strokeStyle = colors.primary;
+        ctx.strokeStyle = "rgba(74, 222, 128, 0.7)";
         ctx.lineWidth = 1;
-        ctx.globalAlpha = rippleAlpha;
+        ctx.globalAlpha = rAlpha;
         ctx.beginPath();
-        ctx.arc(cx, cy, rippleRadius, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.globalAlpha = 1;
-      }
 
-      // 3. 3D Rotating Contour / Brain Lattice Waveform (Video Signature!)
-      const rings = isSleeping ? 5 : 9;
-      for (let i = 0; i < rings; i++) {
-        const ringProgress = (i / rings) * Math.PI;
-        const currentRadius = Math.sin(ringProgress) * baseRadius * (1 + 0.05 * Math.sin(time * 3 + i));
-
-        ctx.beginPath();
-        ctx.strokeStyle = colors.secondary;
-        ctx.lineWidth = 1.2;
-        ctx.globalAlpha = (Math.sin(ringProgress) * 0.55 + 0.2) * (isSleeping ? 0.4 : 0.85);
-
-        // Undulating organic waveform
-        const points = 36;
-        for (let p = 0; p <= points; p++) {
-          const theta = (p / points) * Math.PI * 2;
-          const wobble = Math.sin(theta * 4 + time * 2 + i) * (isSpeaking ? 7 : isListening ? 5 : 2.5) * intensity;
-          const rWobbled = currentRadius + wobble;
-          const x = cx + Math.cos(theta) * rWobbled;
-          const y = cy + Math.sin(theta) * rWobbled * 0.75 + Math.cos(ringProgress) * (baseRadius * 0.5);
-
+        const pts = 48;
+        for (let p = 0; p <= pts; p++) {
+          const angle = (p / pts) * Math.PI * 2;
+          const dist = rRadius + Math.sin(angle * 7 + time * 3) * 4 * intensity;
+          const x = cx + Math.cos(angle) * dist;
+          const y = cy + Math.sin(angle) * dist * 0.95;
           if (p === 0) ctx.moveTo(x, y);
           else ctx.lineTo(x, y);
         }
@@ -136,60 +111,72 @@ export default function QuantumNeuralOrb({
         ctx.globalAlpha = 1;
       }
 
-      // 4. Inner Luminous Core Plasma
-      const coreGrad = ctx.createRadialGradient(
-        cx - baseRadius * 0.2,
-        cy - baseRadius * 0.2,
-        baseRadius * 0.05,
-        cx,
-        cy,
-        baseRadius * 0.8
-      );
-      coreGrad.addColorStop(0, "#ffffff");
-      coreGrad.addColorStop(0.3, colors.secondary);
-      coreGrad.addColorStop(0.7, colors.primary);
-      coreGrad.addColorStop(1, colors.core);
+      // 3. Central Living Plasma Core (Electric Filament Weave)
+      filaments.forEach((fil, idx) => {
+        ctx.beginPath();
+        const layerAlpha = Math.sin(fil.layer * Math.PI) * 0.7 + 0.25;
+        ctx.globalAlpha = layerAlpha * (isSleeping ? 0.35 : 0.9);
 
-      ctx.fillStyle = coreGrad;
+        // Gradient from bright lime neon to emerald
+        const grad = ctx.createLinearGradient(cx - baseRadius, cy, cx + baseRadius, cy);
+        grad.addColorStop(0, "rgba(34, 197, 94, 0.8)");
+        grad.addColorStop(0.5, "rgba(163, 230, 53, 0.95)");
+        grad.addColorStop(1, "rgba(74, 222, 128, 0.8)");
+
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = idx % 3 === 0 ? 1.6 : 1.1;
+
+        const points = 64;
+        const radiusScale = (0.75 + Math.sin(fil.layer * Math.PI) * 0.25) * baseRadius;
+
+        for (let i = 0; i <= points; i++) {
+          const theta = (i / points) * Math.PI * 2;
+          const wave1 = Math.sin(theta * fil.frequency + time * 2.5 + fil.phase) * fil.amplitude * intensity;
+          const wave2 = Math.cos(theta * 3 - time * 1.8 + idx) * 5 * intensity;
+          const currentR = radiusScale + wave1 + wave2;
+
+          // 3D rotation projection effect
+          const rotAngle = time * fil.speed * 20 + fil.phase;
+          const x3d = Math.cos(theta) * currentR;
+          const y3d = Math.sin(theta) * currentR;
+
+          // Apply slight tilt/undulation
+          const x = cx + x3d * Math.cos(rotAngle) - y3d * Math.sin(rotAngle) * 0.3;
+          const y = cy + (x3d * Math.sin(rotAngle) * 0.3 + y3d * Math.cos(rotAngle)) * 0.92;
+
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+      });
+
+      // 4. Ultra-Bright Inner Core Sun
+      const innerSun = ctx.createRadialGradient(cx, cy, 0, cx, cy, baseRadius * 0.45);
+      innerSun.addColorStop(0, "rgba(255, 255, 255, 0.9)");
+      innerSun.addColorStop(0.25, "rgba(187, 247, 208, 0.7)");
+      innerSun.addColorStop(0.65, "rgba(34, 197, 94, 0.45)");
+      innerSun.addColorStop(1, "transparent");
+
+      ctx.fillStyle = innerSun;
       ctx.beginPath();
-      ctx.arc(cx, cy, baseRadius * 0.55 * (1 + 0.03 * Math.sin(time * 4)), 0, Math.PI * 2);
+      ctx.arc(cx, cy, baseRadius * 0.45 * (1 + 0.04 * Math.sin(time * 4)), 0, Math.PI * 2);
       ctx.fill();
 
-      // 5. Orbiting Quantum Dust Particles
+      // 5. Orbiting Ambient Green Bio-Luminescent Dust
       particles.forEach((p) => {
         p.angle += p.speed;
         const px = cx + Math.cos(p.angle) * p.radius;
-        const py = cy + Math.sin(p.angle) * p.radius * 0.85;
+        const py = cy + Math.sin(p.angle) * p.radius * 0.92;
 
-        ctx.fillStyle = colors.secondary;
-        ctx.globalAlpha = p.alpha * (isSleeping ? 0.3 : 0.8);
+        ctx.fillStyle = "#86efac";
+        ctx.globalAlpha = p.alpha * (isSleeping ? 0.25 : 0.85);
         ctx.beginPath();
         ctx.arc(px, py, p.size, 0, Math.PI * 2);
         ctx.fill();
         ctx.globalAlpha = 1;
       });
-
-      // 6. Laser Flare Tendrils when speaking or listening
-      if (isSpeaking || isListening) {
-        const flares = isSpeaking ? 6 : 4;
-        for (let f = 0; f < flares; f++) {
-          const fAngle = time * 1.5 + f * ((Math.PI * 2) / flares);
-          const fLen = baseRadius * (1.1 + 0.25 * Math.sin(time * 5 + f));
-          const fx = cx + Math.cos(fAngle) * fLen;
-          const fy = cy + Math.sin(fAngle) * fLen;
-
-          const flareGrad = ctx.createLinearGradient(cx, cy, fx, fy);
-          flareGrad.addColorStop(0, colors.secondary);
-          flareGrad.addColorStop(1, "transparent");
-
-          ctx.strokeStyle = flareGrad;
-          ctx.lineWidth = 1.5;
-          ctx.beginPath();
-          ctx.moveTo(cx, cy);
-          ctx.lineTo(fx, fy);
-          ctx.stroke();
-        }
-      }
 
       animationFrameId = requestAnimationFrame(render);
     };
@@ -199,55 +186,20 @@ export default function QuantumNeuralOrb({
     return () => {
       cancelAnimationFrame(animationFrameId);
     };
-  }, [size, isSpeaking, isListening, isSleeping, isProcessing, colors, themeColor]);
+  }, [state, size, isSpeaking, isListening, isSleeping, isProcessing]);
 
   return (
     <div
       onClick={onClick}
       className="relative flex items-center justify-center cursor-pointer select-none group"
-      style={{ width: size + 40, height: size + 40 }}
-      title="LYRA Quantum Neural Core • Click to activate or interact"
+      title="LYRA Quantum Core • Click to Speak"
     >
-      {/* Outer Gyroscope Rings */}
-      <motion.div
-        animate={{ rotate: 360 }}
-        transition={{ duration: isSleeping ? 40 : 18, repeat: Infinity, ease: "linear" }}
-        className="absolute rounded-full border border-dashed pointer-events-none transition-colors duration-1000"
-        style={{
-          width: size * 1.15,
-          height: size * 1.15,
-          borderColor: isSleeping ? "rgba(6, 182, 212, 0.15)" : colors.pulse,
-          opacity: 0.35
-        }}
-      />
-
-      <motion.div
-        animate={{ rotate: -360 }}
-        transition={{ duration: isSleeping ? 55 : 24, repeat: Infinity, ease: "linear" }}
-        className="absolute rounded-full border border-dotted pointer-events-none transition-colors duration-1000"
-        style={{
-          width: size * 1.28,
-          height: size * 1.28,
-          borderColor: isSleeping ? "rgba(99, 102, 241, 0.1)" : colors.secondary,
-          opacity: 0.25
-        }}
-      />
-
-      {/* Main High-Performance Canvas */}
       <canvas
         ref={canvasRef}
-        width={size + 40}
-        height={size + 40}
-        className="relative z-10 transition-transform duration-300 group-hover:scale-105"
+        width={size}
+        height={size}
+        className="transition-transform duration-500 group-hover:scale-105 drop-shadow-[0_0_50px_rgba(34,197,94,0.35)]"
       />
-
-      {/* Center Status Glow Dot */}
-      <div className="absolute z-20 flex flex-col items-center pointer-events-none">
-        <span
-          className="h-2 w-2 rounded-full animate-ping"
-          style={{ backgroundColor: colors.primary }}
-        />
-      </div>
     </div>
   );
 }

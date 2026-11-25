@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { motion } from "framer-motion";
-import { Mic, MicOff, Send, Sparkles, Volume2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Mic, MessageSquare, Send, X, Sparkles } from "lucide-react";
 import { cyberAudio } from "./cyber-audio-engine";
 
 interface Props {
@@ -23,6 +23,7 @@ export default function BottomSubtitleDock({
   isSleeping = false
 }: Props) {
   const [inputText, setInputText] = useState("");
+  const [showTextInput, setShowTextInput] = useState(false);
 
   const isSpeaking = state === "speaking";
   const isListening = state === "listening";
@@ -33,108 +34,121 @@ export default function BottomSubtitleDock({
     cyberAudio.playNodeClick();
     onSubmitText?.(inputText.trim());
     setInputText("");
+    setShowTextInput(false);
   };
 
-  // Subtitle text to display (Exact match to video UX!)
-  const displayText = isListening
-    ? transcript || "শুনছি... আপনার নির্দেশ বলুন..."
-    : lastResponse || "হ্যাঁ স্যার, বলুন, কি করতে পারি আপনার জন্য?";
+  // User's spoken query (or default context matching photo)
+  const userQueryText =
+    transcript ||
+    "আপনিও আপনার সরকারি সফরে যুক্ত না থাকলে তুমি আমার আজকের সারাদিনের সবগুলি ম্যাসেজ আমাকে পড়ে শোনাও যাতে কোনো জরুরি নোটিশ মিস না হয়";
+
+  // LYRA's spoken response text (or default response matching photo)
+  const lyraSpeechText =
+    lastResponse ||
+    "আচ্ছা স্যার! আজ কোনো নতুন জরুরি আপডেট আসেনি। তবে ফেসবুক মেসেঞ্জারে কাল সন্ধ্যায় আড্ডা দেওয়ার কথা জানতে চেয়েছেন আপনার ফ্রেন্ড তানভীর আহমেদ। এছাড়া লিঙ্কডইনে ডেভিড স্টার্লিং একটি মেসেজ দিয়েছেন। স্যার, এই মেসেজগুলোর কি কোনো উত্তর পাঠিয়ে দেব?";
 
   return (
-    <div className="relative mx-auto w-full max-w-4xl select-none px-4">
-      {/* Floating Cyberpunk Glass Capsule */}
-      <div className="relative overflow-hidden rounded-3xl border border-white/15 bg-gradient-to-r from-[#0c0a1a]/95 via-[#0d1520]/95 to-[#0c0a1a]/95 p-4 shadow-[0_0_50px_rgba(6,182,212,0.15)] backdrop-blur-2xl">
-        {/* Top subtle neon light line */}
-        <div className="absolute -top-[1px] left-1/4 right-1/4 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent" />
+    <div className="relative mx-auto w-full max-w-4xl select-none px-4 flex flex-col items-center gap-3">
+      {/* 1. Large Bengali Subtitle & Speech Block (Exact TV Photo Match!) */}
+      <div className="text-center max-w-3xl px-2">
+        {/* User Query text in small subtle gray */}
+        <p className="text-[11px] sm:text-xs text-gray-400 font-sans tracking-wide leading-relaxed">
+          {userQueryText}
+        </p>
 
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          {/* Subtitle Dialogue Text (Center or Left aligned) */}
-          <div className="flex-1 flex items-center gap-3 w-full">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-cyan-500/20 border border-cyan-400/30 text-cyan-300 shadow-md">
-              <Sparkles size={18} className={isSpeaking ? "animate-spin" : ""} />
-            </div>
+        {/* LYRA Response in prominent bold white text */}
+        <p className="mt-1.5 text-sm sm:text-[15px] font-semibold text-white/95 leading-relaxed tracking-normal font-sans drop-shadow-sm">
+          {isListening ? (
+            <span className="text-emerald-400 font-bold animate-pulse">
+              ● শুনছি ইয়াসিন স্যার... আপনার কথা বলুন...
+            </span>
+          ) : (
+            lyraSpeechText
+          )}
+        </p>
+      </div>
 
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2 text-[10px] font-mono tracking-wider uppercase text-cyan-400">
-                <span>{isListening ? "AUDIO STREAM INPUT" : "LYRA SYNTHESIS OUTPUT"}</span>
-                {isSpeaking && (
-                  <span className="flex items-center gap-1 text-emerald-400 font-bold">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
-                    SPEAKING
-                  </span>
-                )}
-              </div>
-              <p className="mt-0.5 text-sm sm:text-base font-semibold text-white tracking-wide truncate">
-                "{displayText}"
-              </p>
-            </div>
-          </div>
+      {/* 2. Floating Mic Control Capsule Pill (Exact TV Screen Match!) */}
+      <div className="relative flex items-center justify-between gap-3 rounded-full border border-emerald-500/30 bg-[#06120b]/90 px-3.5 py-1.5 shadow-[0_0_30px_rgba(34,197,94,0.2)] backdrop-blur-xl max-w-md w-full">
+        {/* Left: Keyboard/Text icon button */}
+        <button
+          type="button"
+          onClick={() => {
+            cyberAudio.playNodeClick();
+            setShowTextInput(!showTextInput);
+          }}
+          className="h-7 w-7 rounded-full bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white flex items-center justify-center transition"
+          title="Type command"
+        >
+          <MessageSquare size={14} />
+        </button>
 
-          {/* Sound wave equalizer animation bars */}
-          <div className="hidden md:flex items-center gap-1 h-8 px-2">
-            {Array.from({ length: 8 }).map((_, idx) => (
-              <motion.div
-                key={idx}
-                animate={{
-                  height: isSpeaking ? [6, 26, 10, 30, 8] : isListening ? [4, 18, 6] : 4
-                }}
-                transition={{
-                  duration: 0.6,
-                  repeat: Infinity,
-                  repeatType: "reverse",
-                  delay: idx * 0.08
-                }}
-                className="w-1 rounded-full bg-cyan-400/80"
-              />
-            ))}
-          </div>
-
-          {/* Center Glowing Microphone Button */}
-          <div className="flex items-center gap-2 shrink-0">
-            <motion.button
-              whileHover={{ scale: 1.08 }}
-              whileTap={{ scale: 0.94 }}
-              onClick={() => {
-                cyberAudio.playWakeChime();
-                onMicClick?.();
-              }}
-              className={`relative flex h-12 w-12 items-center justify-center rounded-2xl border transition-all duration-300 shadow-xl ${
-                isListening
-                  ? "border-rose-400 bg-rose-500 text-white shadow-rose-600/50"
-                  : isSpeaking
-                  ? "border-emerald-400 bg-emerald-600 text-white shadow-emerald-600/50"
-                  : isSleeping
-                  ? "border-indigo-400 bg-indigo-950 text-indigo-300"
-                  : "border-cyan-400/50 bg-gradient-to-tr from-cyan-600 to-emerald-600 text-white shadow-cyan-600/40"
-              }`}
-              title="Click or say 'Hey LYRA'"
-            >
-              {isListening && (
-                <span className="absolute inset-0 rounded-2xl animate-ping bg-rose-500/40" />
-              )}
-              <Mic size={22} className={isListening ? "animate-pulse" : ""} />
-            </motion.button>
-          </div>
+        {/* Center: Status indicator with pulsating green dot */}
+        <div className="flex-1 text-center font-sans text-xs text-gray-300 flex items-center justify-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
+          <span className="truncate">
+            {isListening
+              ? "লায়রা শুনছে..."
+              : isSpeaking
+              ? "লায়রা কথা বলছে..."
+              : "আপনি... বলতে কথা শুনতে প্রস্তুত"}
+          </span>
         </div>
 
-        {/* Text Input Row for silent / text commands */}
-        <form onSubmit={handleSubmit} className="mt-3 flex items-center gap-2 border-t border-white/10 pt-3">
-          <input
-            type="text"
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            placeholder="লায়রাকে মুখে বলুন অথবা এখানে লিখুন (e.g. আজকের শিডিউল কি?)..."
-            className="flex-1 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2 text-xs text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400/40"
-          />
-          <button
-            type="submit"
-            className="flex h-9 items-center justify-center gap-1.5 rounded-xl bg-cyan-600/80 hover:bg-cyan-500 px-4 text-xs font-bold text-white transition shadow-md shadow-cyan-900/30"
-          >
-            <Send size={13} />
-            <span className="hidden sm:inline">পাঠান</span>
-          </button>
-        </form>
+        {/* Right: Glowing Neon Green Circular Microphone Button */}
+        <motion.button
+          whileHover={{ scale: 1.12 }}
+          whileTap={{ scale: 0.92 }}
+          onClick={() => {
+            cyberAudio.playWakeChime();
+            onMicClick?.();
+          }}
+          className="relative flex h-8 w-8 items-center justify-center rounded-full bg-lime-500 hover:bg-lime-400 text-black shadow-[0_0_20px_rgba(163,230,53,0.7)] transition cursor-pointer"
+          title="Click to speak with LYRA"
+        >
+          {isListening && (
+            <span className="absolute inset-0 rounded-full animate-ping bg-lime-400/50" />
+          )}
+          <Mic size={16} className="font-extrabold stroke-[2.5]" />
+        </motion.button>
       </div>
+
+      {/* Optional Pop-up Text Input Form */}
+      <AnimatePresence>
+        {showTextInput && (
+          <motion.form
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            onSubmit={handleSubmit}
+            className="flex items-center gap-2 rounded-2xl border border-emerald-500/30 bg-[#06120b] p-2 shadow-2xl backdrop-blur-xl w-full max-w-md mt-1"
+          >
+            <input
+              type="text"
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              placeholder="লায়রাকে নির্দেশ দিন (যেমন: 'আজকের খবর বলো')..."
+              className="flex-1 bg-transparent px-3 py-1.5 text-xs text-white placeholder-gray-500 outline-none font-sans"
+              autoFocus
+            />
+
+            <button
+              type="submit"
+              className="flex h-7 w-7 items-center justify-center rounded-xl bg-emerald-500 text-black font-bold hover:bg-emerald-400 transition"
+            >
+              <Send size={13} />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowTextInput(false)}
+              className="text-gray-400 hover:text-white px-1"
+            >
+              <X size={14} />
+            </button>
+          </motion.form>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -5,15 +5,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Calendar,
   Globe,
-  Mail,
-  Users,
-  Eye,
+  MessageSquare,
   Share2,
-  Activity,
+  Users,
+  Mail,
+  CreditCard,
   DollarSign,
-  FileText,
-  Sparkles,
-  ArrowUpRight
+  TrendingUp,
+  Package,
+  Sparkles
 } from "lucide-react";
 import { cyberAudio } from "./cyber-audio-engine";
 
@@ -21,322 +21,322 @@ export interface SatelliteNode {
   id: string;
   name: string;
   labelBangla: string;
-  category: string;
   icon: React.ComponentType<{ size?: number; className?: string; color?: string; style?: React.CSSProperties }>;
-  angleDeg: number; // Position in circular orbit (0 = East, 90 = South, etc.)
-  color: string;
-  badge: string;
-  statusText: string;
+  angleDeg: number;
+  radiusOffset?: number;
+  badgeCount?: number;
+  isSpecialHalo?: boolean; // For Inbox node with double glowing halo
   queryPrompt: string;
+  statusText: string;
 }
 
+// 10 Exact Nodes from TV Photo:
+// Today, Website, Inbox, Social, People, Mail, Subs, Money, Stock, Orders
 const NODES_DATA: SatelliteNode[] = [
   {
     id: "today",
     name: "Today",
     labelBangla: "আজকের শিডিউল",
-    category: "Schedule & Agenda",
     icon: Calendar,
-    angleDeg: -90, // Top
-    color: "#4285F4",
-    badge: "3 Events",
-    statusText: "11:30 AM Sync, 3:30 PM AI Rev",
-    queryPrompt: "আজকের মিটিং ও ক্যালেন্ডার শিডিউল কি?"
+    angleDeg: -120, // Top-Left
+    radiusOffset: 0,
+    queryPrompt: "আজকের মিটিং ও ক্যালেন্ডার শিডিউল কি?",
+    statusText: "৩টি শিডিউল ইভেন্ট সক্রিয়"
   },
   {
     id: "website",
     name: "Website",
-    labelBangla: "ওয়েব ব্রাউজার",
-    category: "Web & Intelligence",
+    labelBangla: "ওয়েবসাইট ও ওয়েব",
     icon: Globe,
     angleDeg: -45, // Top-Right
-    color: "#06B6D4",
-    badge: "Active",
-    statusText: "Google Search & Docs online",
-    queryPrompt: "ওয়েব ব্রাউজার এবং রিয়েল-টাইম সার্চ স্ট্যাটাস কি?"
+    radiusOffset: 5,
+    queryPrompt: "ওয়েব ব্রাউজার এবং রিয়েল-টাইম সার্চ স্ট্যাটাস কি?",
+    statusText: "গুগল ও ওয়েব রিয়েল-টাইম সিঙ্ক"
   },
   {
     id: "inbox",
     name: "Inbox",
-    labelBangla: "ইনবক্স মেসেজ",
-    category: "Unified Messaging",
-    icon: Mail,
-    angleDeg: 0, // Right
-    color: "#EA4335",
-    badge: "0 New",
-    statusText: "Inbox clean • Ready for auth",
-    queryPrompt: "আমার ইনবক্সে কি কোন নতুন মেসেজ বা ইমেইল আছে?"
-  },
-  {
-    id: "vision",
-    name: "Vision",
-    labelBangla: "লাইরা ভিশন (ক্যামেরা)",
-    category: "Multimodal AI Eye",
-    icon: Eye,
-    angleDeg: 45, // Bottom-Right
-    color: "#06B6D4",
-    badge: "Optical AI",
-    statusText: "Face & Brother Recognition Active",
-    queryPrompt: "সামনে কে আছে দেখো এবং ক্যামেরা স্ক্যান করো"
+    labelBangla: "ইনবক্স চ্যাট",
+    icon: MessageSquare,
+    angleDeg: 0, // Far Right
+    radiusOffset: 25,
+    isSpecialHalo: true, // Special glowing green ring matching photo!
+    queryPrompt: "আমার ইনবক্সের সমস্ত নতুন মেসেজ পড়ে শোনাও",
+    statusText: "ফেসবুক, হোয়াটসঅ্যাপ ও লিঙ্কডইন চ্যাট"
   },
   {
     id: "social",
     name: "Social",
     labelBangla: "সোশ্যাল মিডিয়া",
-    category: "Social Platforms",
     icon: Share2,
-    angleDeg: 90, // Bottom
-    color: "#10B981",
-    badge: "Yeasin Core",
-    statusText: "Facebook & LinkedIn Synced",
-    queryPrompt: "আমার সোশ্যাল মিডিয়ার আপডেট কি?"
+    angleDeg: 35, // Bottom-Right
+    radiusOffset: 15,
+    queryPrompt: "আমার সোশ্যাল মিডিয়ার আপডেট কি?",
+    statusText: "ফেসবুক ও লিঙ্কডইন প্রোফাইল যুক্ত"
   },
   {
-    id: "health",
-    name: "Health",
-    labelBangla: "সিস্টেম ডায়াগনস্টিক",
-    category: "System Core & DB",
-    icon: Activity,
-    angleDeg: 135, // Bottom-Left
-    color: "#F59E0B",
-    badge: "Normal",
-    statusText: "Database: Standby • Latency: 14ms",
-    queryPrompt: "সিস্টেম ডায়াগনস্টিক ও ডেটাবেস হেলথ চেক করো"
+    id: "people",
+    name: "People",
+    labelBangla: "পরিচিত ব্যক্তিবর্গ",
+    icon: Users,
+    angleDeg: 65, // Bottom-Far-Right
+    radiusOffset: 5,
+    badgeCount: 2,
+    queryPrompt: "আমার ফ্রেন্ড লিস্ট ও পরিচিতদের কি খবর?",
+    statusText: "২ জন ফ্রেন্ডের রিকোয়েস্ট পেন্ডিং"
   },
   {
-    id: "finance",
-    name: "Finance",
-    labelBangla: "ফাইন্যান্স ও আয়",
-    category: "Analytics & Budget",
+    id: "mail",
+    name: "Mail",
+    labelBangla: "ইমেইল ও ইনমেইল",
+    icon: Mail,
+    angleDeg: 105, // Bottom-Center-Right
+    radiusOffset: -5,
+    badgeCount: 4,
+    queryPrompt: "আমার জিমেইল ও লিঙ্কডইন ইনমেইলে কি মেসেজ আছে?",
+    statusText: "৪টি নতুন প্রায়োরিটি ইনমেইল"
+  },
+  {
+    id: "subs",
+    name: "Subs",
+    labelBangla: "সাবস্ক্রিপশন",
+    icon: CreditCard,
+    angleDeg: 140, // Bottom-Center-Left
+    radiusOffset: -10,
+    badgeCount: 1,
+    queryPrompt: "আমার সার্ভিস সাবস্ক্রিপশন স্ট্যাটাস কি?",
+    statusText: "১টি বিলিং সাইকেল আপডেট প্রয়োজন"
+  },
+  {
+    id: "money",
+    name: "Money",
+    labelBangla: "ফাইন্যান্স ও আয়",
     icon: DollarSign,
-    angleDeg: 180, // Left
-    color: "#10B981",
-    badge: "$0.00",
-    statusText: "Revenue & billing monitoring",
-    queryPrompt: "ফাইন্যান্স ও বর্তমান রেভিনিউ স্ট্যাটাস বলো"
+    angleDeg: 170, // Bottom-Left
+    radiusOffset: 0,
+    queryPrompt: "বর্তমান ফাইন্যান্স ও রেভিনিউ ব্যালেন্স কত?",
+    statusText: "ব্যালেন্স ও পেপ্যাল স্ট্যাটাস স্বাভাবিক"
   },
   {
-    id: "notes",
-    name: "Notes",
-    labelBangla: "ব্রেন মেমোরি",
-    category: "Knowledge & Notes",
-    icon: FileText,
-    angleDeg: 225, // Top-Left
-    color: "#EC4899",
-    badge: "12 Items",
-    statusText: "Long-term AI memory active",
-    queryPrompt: "লায়রা তোমার মেমোরিতে কি কি নোট সংরক্ষিত আছে?"
+    id: "stock",
+    name: "Stock",
+    labelBangla: "স্টক ও ট্রেড",
+    icon: TrendingUp,
+    angleDeg: 200, // Far Left
+    radiusOffset: 15,
+    badgeCount: 1,
+    queryPrompt: "মার্কেট ও স্টক ইনডেক্সের হালনাগাদ কি?",
+    statusText: "১টি ইনডেক্স অ্যালার্ট পাওয়া গেছে"
+  },
+  {
+    id: "orders",
+    name: "Orders",
+    labelBangla: "অর্ডার ও পার্সেল",
+    icon: Package,
+    angleDeg: 240, // Top-Left
+    radiusOffset: 10,
+    badgeCount: 1,
+    queryPrompt: "আমার অনলাইন অর্ডার ও পার্সেলের কি খবর?",
+    statusText: "১টি পার্সেল ডেলিভারির পথে আছে"
   }
 ];
 
 interface Props {
   orbitRadius?: number;
-  onSelectNode: (queryPrompt: string) => void;
+  onSelectNode?: (prompt: string, nodeId: string) => void;
   themeColor?: "emerald" | "cyan" | "violet";
 }
 
 export default function SatelliteConstellation({
-  orbitRadius = 240,
-  onSelectNode,
-  themeColor = "emerald"
+  orbitRadius = 220,
+  onSelectNode
 }: Props) {
-  const [hoveredNode, setHoveredNode] = useState<SatelliteNode | null>(null);
+  const [activeHoverNode, setActiveHoverNode] = useState<string | null>(null);
 
-  const primaryGlow =
-    themeColor === "emerald"
-      ? "rgba(16, 185, 129, 0.5)"
-      : themeColor === "cyan"
-      ? "rgba(6, 182, 212, 0.5)"
-      : "rgba(139, 92, 246, 0.5)";
-
-  const svgSize = orbitRadius * 2 + 160;
-  const center = svgSize / 2;
+  // Elliptical radii to match wide TV aspect ratio
+  const rx = orbitRadius * 1.35;
+  const ry = orbitRadius * 0.95;
 
   return (
-    <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-      {/* SVG Circuit Lines connecting center to each satellite node */}
+    <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-10">
+      {/* SVG Circuit Lines & Organic Circuit Field */}
       <svg
-        width={svgSize}
-        height={svgSize}
-        viewBox={`0 0 ${svgSize} ${svgSize}`}
-        className="absolute pointer-events-none overflow-visible"
-        style={{ zIndex: 5 }}
+        className="absolute inset-0 w-full h-full pointer-events-none overflow-visible"
+        style={{ filter: "drop-shadow(0 0 8px rgba(34, 197, 94, 0.35))" }}
       >
         <defs>
-          <linearGradient id="laserBeamGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.8" />
-            <stop offset="50%" stopColor={primaryGlow} stopOpacity="0.5" />
-            <stop offset="100%" stopColor="transparent" stopOpacity="0.1" />
-          </linearGradient>
+          <radialGradient id="circuitGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#22c55e" stopOpacity="0.8" />
+            <stop offset="70%" stopColor="#16a34a" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="transparent" stopOpacity="0" />
+          </radialGradient>
 
-          <filter id="glowFilter" x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur stdDeviation="3" result="blur" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
+          <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="rgba(34, 197, 94, 0.5)" />
+            <stop offset="100%" stopColor="rgba(74, 222, 128, 0.15)" />
+          </linearGradient>
         </defs>
 
+        {/* Organic Orbiting Ring Path */}
+        <g transform="translate(50%, 50%)">
+          <ellipse
+            cx="0"
+            cy="0"
+            rx={rx}
+            ry={ry}
+            fill="none"
+            stroke="rgba(34, 197, 94, 0.15)"
+            strokeWidth="1.2"
+            strokeDasharray="4 6"
+          />
+          <ellipse
+            cx="0"
+            cy="0"
+            rx={rx * 0.65}
+            ry={ry * 0.65}
+            fill="none"
+            stroke="rgba(34, 197, 94, 0.08)"
+            strokeWidth="1"
+          />
+        </g>
+
+        {/* Connecting Laser Lines from Center to each Node */}
         {NODES_DATA.map((node) => {
           const rad = (node.angleDeg * Math.PI) / 180;
-          const targetX = center + Math.cos(rad) * orbitRadius;
-          const targetY = center + Math.sin(rad) * orbitRadius;
-          const startX = center + Math.cos(rad) * 60;
-          const startY = center + Math.sin(rad) * 60;
-          const isHovered = hoveredNode?.id === node.id;
+          const nodeRx = rx + (node.radiusOffset || 0);
+          const nodeRy = ry + (node.radiusOffset || 0);
+          const nx = Math.cos(rad) * nodeRx;
+          const ny = Math.sin(rad) * nodeRy;
+
+          // Inner attachment point on central orb
+          const innerR = 75;
+          const ix = Math.cos(rad) * innerR;
+          const iy = Math.sin(rad) * innerR;
+
+          const isHovered = activeHoverNode === node.id;
 
           return (
-            <g key={`circuit-${node.id}`}>
-              {/* Pulsing Base Laser Circuit Path */}
-              <motion.line
-                x1={center}
-                y1={center}
-                x2={targetX}
-                y2={targetY}
-                stroke={isHovered ? node.color : primaryGlow}
-                strokeWidth={isHovered ? 2 : 1.2}
-                strokeDasharray="4 4"
-                strokeOpacity={isHovered ? 0.9 : 0.4}
-                filter="url(#glowFilter)"
-                animate={{
-                  strokeDashoffset: [0, -24]
-                }}
-                transition={{
-                  duration: isHovered ? 0.8 : 2.5,
-                  repeat: Infinity,
-                  ease: "linear"
-                }}
+            <g key={`circuit-line-${node.id}`} transform="translate(50%, 50%)">
+              <line
+                x1={ix}
+                y1={iy}
+                x2={nx}
+                y2={ny}
+                stroke={isHovered ? "rgba(74, 222, 128, 0.85)" : "rgba(34, 197, 94, 0.28)"}
+                strokeWidth={isHovered ? 1.8 : 1}
+                strokeDasharray={isHovered ? "none" : "3 5"}
+                className="transition-all duration-300"
               />
 
-              {/* Traveling Energy Packet Dot on Circuit Line */}
-              <motion.circle
-                r={isHovered ? 3.5 : 2}
-                fill={isHovered ? "#ffffff" : node.color}
-                filter="url(#glowFilter)"
-                animate={{
-                  cx: [startX, targetX],
-                  cy: [startY, targetY]
-                }}
-                transition={{
-                  duration: isHovered ? 1.0 : 2.2,
-                  repeat: Infinity,
-                  ease: "linear"
-                }}
-              />
+              {/* Energy pulse bead on line */}
+              <circle
+                r={isHovered ? 2.5 : 1.5}
+                fill="#86efac"
+                opacity={isHovered ? 0.9 : 0.6}
+              >
+                <animateMotion
+                  path={`M ${ix} ${iy} L ${nx} ${ny}`}
+                  dur={`${3 + (node.angleDeg % 3)}s`}
+                  repeatCount="indefinite"
+                />
+              </circle>
             </g>
           );
         })}
       </svg>
 
-      {/* 8 Satellite Interactive Nodes */}
-      {NODES_DATA.map((node) => {
-        const rad = (node.angleDeg * Math.PI) / 180;
-        const x = Math.cos(rad) * orbitRadius;
-        const y = Math.sin(rad) * orbitRadius;
-        const Icon = node.icon;
-        const isHovered = hoveredNode?.id === node.id;
+      {/* Orbiting Interactive Node Pills */}
+      <div className="relative w-full h-full flex items-center justify-center">
+        {NODES_DATA.map((node) => {
+          const rad = (node.angleDeg * Math.PI) / 180;
+          const nodeRx = rx + (node.radiusOffset || 0);
+          const nodeRy = ry + (node.radiusOffset || 0);
+          const x = Math.cos(rad) * nodeRx;
+          const y = Math.sin(rad) * nodeRy;
 
-        return (
-          <div
-            key={node.id}
-            className="absolute pointer-events-auto flex flex-col items-center justify-center select-none"
-            style={{
-              transform: `translate(${x}px, ${y}px)`,
-              zIndex: 20
-            }}
-          >
-            {/* Holographic Tooltip on Hover */}
-            <AnimatePresence>
-              {isHovered && (
-                <motion.div
-                  key={`tooltip-${node.id}`}
-                  initial={{ opacity: 0, scale: 0.85, y: node.angleDeg > 0 ? 15 : -15 }}
-                  animate={{ opacity: 1, scale: 1, y: node.angleDeg > 0 ? 25 : -25 }}
-                  exit={{ opacity: 0, scale: 0.85 }}
-                  transition={{ duration: 0.18 }}
-                  className="absolute pointer-events-none z-50 w-52 rounded-2xl border border-white/20 bg-[#0c0a1a]/95 p-3.5 shadow-2xl backdrop-blur-2xl"
-                  style={{
-                    [node.angleDeg > 0 ? "top" : "bottom"]: "100%",
-                    boxShadow: `0 0 25px ${node.color}35`
-                  }}
-                >
-                  <div className="flex items-center justify-between border-b border-white/10 pb-2">
-                    <div className="flex items-center gap-1.5">
-                      <span className="h-2 w-2 rounded-full animate-ping" style={{ backgroundColor: node.color }} />
-                      <span className="text-xs font-bold text-white tracking-wide">{node.name}</span>
-                    </div>
-                    <span
-                      className="rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider"
-                      style={{ backgroundColor: `${node.color}25`, color: node.color }}
-                    >
-                      {node.badge}
-                    </span>
-                  </div>
+          const IconComponent = node.icon;
+          const isHovered = activeHoverNode === node.id;
 
-                  <p className="mt-2 text-[11px] font-medium text-gray-300 leading-snug">
-                    {node.statusText}
-                  </p>
-                  <p className="mt-1 text-[10px] text-gray-500 font-mono">{node.labelBangla}</p>
-
-                  <div className="mt-2.5 pt-2 border-t border-white/5 flex items-center justify-between text-[10px] text-emerald-400 font-semibold">
-                    <span>ক্লিক করে কথা বলুন</span>
-                    <ArrowUpRight size={12} />
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Satellite Circular Pod Button */}
-            <motion.button
-              whileHover={{ scale: 1.18 }}
-              whileTap={{ scale: 0.94 }}
-              onMouseEnter={() => {
-                setHoveredNode(node);
-                cyberAudio.playNodeHover();
-              }}
-              onMouseLeave={() => setHoveredNode(null)}
-              onClick={() => {
-                cyberAudio.playNodeClick();
-                onSelectNode(node.queryPrompt);
-              }}
-              className="relative flex h-14 w-14 items-center justify-center rounded-2xl border backdrop-blur-xl transition-all duration-300 shadow-lg group"
+          return (
+            <div
+              key={node.id}
               style={{
-                backgroundColor: isHovered ? `${node.color}30` : "rgba(10, 9, 20, 0.8)",
-                borderColor: isHovered ? node.color : "rgba(255, 255, 255, 0.15)",
-                boxShadow: isHovered
-                  ? `0 0 30px ${node.color}70, inset 0 0 15px ${node.color}40`
-                  : `0 0 15px rgba(0, 0, 0, 0.5)`
+                transform: `translate(${x}px, ${y}px)`
               }}
+              className="absolute pointer-events-auto flex flex-col items-center justify-center -translate-x-1/2 -translate-y-1/2"
             >
-              {/* Outer Pulse Beacon */}
-              <div
-                className="absolute inset-0 rounded-2xl animate-ping opacity-20 pointer-events-none"
-                style={{ backgroundColor: node.color }}
-              />
+              {/* Special Halo for Inbox Node matching Photo */}
+              {node.isSpecialHalo && (
+                <div className="absolute -inset-2.5 rounded-full border border-emerald-400/60 shadow-[0_0_20px_rgba(34,197,94,0.45)] pointer-events-none animate-pulse" />
+              )}
 
-              <span style={{ color: isHovered ? "#ffffff" : node.color }} className="transition-colors duration-200 flex items-center justify-center">
-                <Icon size={22} />
-              </span>
+              {/* Circular Node Button */}
+              <motion.button
+                whileHover={{ scale: 1.15 }}
+                whileTap={{ scale: 0.92 }}
+                onClick={() => {
+                  cyberAudio.playNodeClick();
+                  onSelectNode?.(node.queryPrompt, node.id);
+                }}
+                onMouseEnter={() => {
+                  setActiveHoverNode(node.id);
+                  cyberAudio.playNodeHover();
+                }}
+                onMouseLeave={() => setActiveHoverNode(null)}
+                className={`relative flex items-center justify-center h-10 w-10 sm:h-12 sm:w-12 rounded-full border transition-all duration-300 ${
+                  node.isSpecialHalo
+                    ? "bg-[#092213] border-emerald-400 text-emerald-300 shadow-[0_0_15px_rgba(34,197,94,0.6)]"
+                    : isHovered
+                    ? "bg-[#0c2e1a] border-emerald-300 text-white shadow-[0_0_15px_rgba(34,197,94,0.5)]"
+                    : "bg-[#07170e]/90 border-emerald-500/40 text-emerald-400/90 hover:border-emerald-400 shadow-md"
+                }`}
+              >
+                <IconComponent size={18} className="sm:text-xl" />
 
-              {/* Corner Sci-Fi Tech Notches */}
-              <span className="absolute -top-1 -right-1 h-1.5 w-1.5 rounded-full bg-white/40" />
-              <span className="absolute -bottom-1 -left-1 h-1.5 w-1.5 rounded-full bg-white/40" />
-            </motion.button>
+                {/* Coral/Pink Notification Count Badge matching Photo */}
+                {node.badgeCount !== undefined && node.badgeCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[9px] font-bold text-white shadow-sm ring-1 ring-[#04030a]">
+                    {node.badgeCount}
+                  </span>
+                )}
+              </motion.button>
 
-            {/* Label Underneath (Signature Video Feature!) */}
-            <div className="mt-2 flex flex-col items-center">
+              {/* Node Title Label under icon */}
               <span
-                className="text-xs font-bold tracking-wider transition-colors duration-200"
-                style={{ color: isHovered ? "#ffffff" : "rgba(226, 232, 240, 0.85)" }}
+                className={`mt-1.5 text-[10px] sm:text-[11px] font-mono tracking-wider font-semibold transition-colors duration-200 ${
+                  node.isSpecialHalo
+                    ? "text-emerald-300 font-bold"
+                    : isHovered
+                    ? "text-white"
+                    : "text-gray-400"
+                }`}
               >
                 {node.name}
               </span>
-              <span className="text-[10px] font-mono text-gray-500">{node.badge}</span>
+
+              {/* Hover Tooltip */}
+              <AnimatePresence>
+                {isHovered && (
+                  <motion.div
+                    key={`tooltip-${node.id}`}
+                    initial={{ opacity: 0, y: 6, scale: 0.92 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 4, scale: 0.95 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute top-14 z-50 whitespace-nowrap rounded-xl border border-emerald-500/30 bg-[#06180e]/95 px-3 py-1.5 shadow-[0_0_20px_rgba(34,197,94,0.3)] backdrop-blur-md"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <Sparkles size={11} className="text-emerald-400" />
+                      <span className="text-xs font-bold text-white">{node.labelBangla}</span>
+                    </div>
+                    <p className="text-[10px] text-gray-300 font-mono mt-0.5">{node.statusText}</p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 }
