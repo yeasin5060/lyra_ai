@@ -146,6 +146,29 @@ export default function RightStreamHud({ dbStatus = "Connected" }: Props) {
             </div>
           </div>
         </div>
+
+        {/* Model Latency & Inference Meters (Exact Video 3 Match!) */}
+        <div className="mt-3 space-y-2 pt-2 border-t border-white/5 font-mono text-[11px]">
+          <div>
+            <div className="flex items-center justify-between text-gray-300 mb-1">
+              <span className="text-[10px] text-gray-400">Claude 3.5 Sonnet</span>
+              <span className="text-emerald-400 font-bold text-[10px]">37% • 1.1s</span>
+            </div>
+            <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full w-[37%]" />
+            </div>
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between text-gray-300 mb-1">
+              <span className="text-[10px] text-gray-400">ElevenLabs Neural Voice</span>
+              <span className="text-cyan-400 font-bold text-[10px]">29% • 0.3s</span>
+            </div>
+            <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-cyan-500 to-violet-500 rounded-full w-[29%]" />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

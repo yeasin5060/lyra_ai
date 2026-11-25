@@ -14,7 +14,9 @@ import {
   Share2,
   ShieldCheck,
   Globe,
-  Camera
+  Camera,
+  Phone,
+  MessageSquare
 } from "lucide-react";
 import QuantumNeuralOrb from "./quantum-neural-orb";
 import SatelliteConstellation from "./satellite-constellation";
@@ -25,6 +27,8 @@ import BottomSubtitleDock from "./bottom-subtitle-dock";
 import LiveNewsReaderModal, { type NewsItem } from "./live-news-reader-modal";
 import SocialAccountsModal from "./social-accounts-modal";
 import LyraVisionHud from "./lyra-vision-hud";
+import LyraSecureLinkCall from "./lyra-secure-link-call";
+import CenterMessagesCard from "./center-messages-card";
 import { cyberAudio } from "./cyber-audio-engine";
 
 interface Props {
@@ -65,6 +69,8 @@ export default function JarvisCockpit({
   const [isSocialModalOpen, setIsSocialModalOpen] = useState(false);
   const [isVisionModalOpen, setIsVisionModalOpen] = useState(false);
   const [visionInitialMode, setVisionInitialMode] = useState<"auto" | "brother" | "face">("auto");
+  const [isSecureCallOpen, setIsSecureCallOpen] = useState(false);
+  const [isCenterMessagesOpen, setIsCenterMessagesOpen] = useState(true);
   const [newsArticles, setNewsArticles] = useState<NewsItem[]>([
     {
       id: "prothomalo-1",
@@ -126,6 +132,8 @@ export default function JarvisCockpit({
       void fetchLiveNews();
     } else if (prompt.includes("সোশ্যাল")) {
       setIsSocialModalOpen(true);
+    } else if (prompt.includes("ইনবক্স") || prompt.includes("মেসেজ")) {
+      setIsCenterMessagesOpen(true);
     } else if (
       prompt.includes("ক্যামেরা") ||
       prompt.includes("ভিশন") ||
@@ -155,6 +163,25 @@ export default function JarvisCockpit({
         setVisionInitialMode("auto");
       }
       setIsVisionModalOpen(true);
+    } else if (
+      clean.includes("call") ||
+      clean.includes("কল দাও") ||
+      clean.includes("কল করো") ||
+      clean.includes("ফোন দাও") ||
+      clean.includes("ফোন করো") ||
+      clean.includes("ভাবি") ||
+      clean.includes("bhabi") ||
+      clean.includes("secure link") ||
+      clean.includes("সিকিউর লিংক")
+    ) {
+      setIsSecureCallOpen(true);
+    } else if (
+      clean.includes("message") ||
+      clean.includes("মেসেজ") ||
+      clean.includes("ইনবক্স") ||
+      clean.includes("চ্যাট")
+    ) {
+      setIsCenterMessagesOpen(true);
     }
     onSubmitQuery?.(prompt);
   };
@@ -250,6 +277,36 @@ export default function JarvisCockpit({
           >
             <Camera size={13} />
             <span className="hidden sm:inline">লায়রা ভিশন</span>
+          </button>
+
+          {/* Floating Messages Center Card Toggle (Video 3 Match) */}
+          <button
+            onClick={() => {
+              cyberAudio.playNodeClick();
+              setIsCenterMessagesOpen(!isCenterMessagesOpen);
+            }}
+            className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition shadow-sm ${
+              isCenterMessagesOpen
+                ? "border-emerald-500/50 bg-emerald-500/25 text-emerald-300 shadow-emerald-900/30"
+                : "border-white/10 bg-white/5 text-gray-300 hover:bg-white/10"
+            }`}
+            title="Toggle Center Messages Card"
+          >
+            <MessageSquare size={13} className="text-emerald-400" />
+            <span className="hidden sm:inline">মেসেজ (৪৫৫)</span>
+          </button>
+
+          {/* Secure Link Voice Call (Video 4 Match: LYRA SECURE LINK) */}
+          <button
+            onClick={() => {
+              cyberAudio.playNodeClick();
+              setIsSecureCallOpen(true);
+            }}
+            className="flex items-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/15 px-3 py-1.5 text-xs font-semibold text-emerald-200 transition hover:bg-emerald-500/30 shadow-sm"
+            title="Open LYRA Secure Link Call to Bhabi"
+          >
+            <Phone size={13} className="text-emerald-400" />
+            <span className="hidden sm:inline">সিকিউর কল</span>
           </button>
 
           {/* Theme Palette Switcher */}
@@ -355,6 +412,17 @@ export default function JarvisCockpit({
               onClick={handleOrbClick}
             />
           </div>
+
+          {/* Floating Inbound Messages Center Card (Exact Video 3 Match!) */}
+          {isCenterMessagesOpen && (
+            <div className="absolute right-0 sm:right-2 lg:right-6 top-1/2 -translate-y-1/2 z-30 max-w-[280px] sm:max-w-xs shadow-2xl">
+              <CenterMessagesCard
+                isOpen={isCenterMessagesOpen}
+                onClose={() => setIsCenterMessagesOpen(false)}
+                onSelectChat={(text) => handleUserQuery(text)}
+              />
+            </div>
+          )}
         </div>
 
         {/* Right HUD Panel: AI BRAIN - System Stream */}
@@ -394,6 +462,13 @@ export default function JarvisCockpit({
         onClose={() => setIsVisionModalOpen(false)}
         onSpeakFeedback={(text) => onSubmitQuery?.(text)}
         initialMode={visionInitialMode}
+      />
+
+      <LyraSecureLinkCall
+        isOpen={isSecureCallOpen}
+        onClose={() => setIsSecureCallOpen(false)}
+        callerName="স্যার"
+        receiverName="ভাবি"
       />
     </div>
   );

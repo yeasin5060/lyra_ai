@@ -343,6 +343,20 @@ export function useVoiceAssistant() {
               ? "ক্যামেরা ভিশন সক্রিয় হয়েছে স্যার। আমি দেখতে পাচ্ছি আপনি ডেস্কে বসে গভীর মনোযোগ দিয়ে কাজ করছেন। লাইরা ভিশন মোডে লাইভ স্ক্যানার সচল রয়েছে।"
               : "Camera vision active, Sir! You are present at your workstation in an optimal productive setting.";
         }
+      } else if (
+        cleanLower.includes("call") ||
+        cleanLower.includes("কল দাও") ||
+        cleanLower.includes("কল করো") ||
+        cleanLower.includes("ফোন দাও") ||
+        cleanLower.includes("ফোন করো") ||
+        cleanLower.includes("ভাবি") ||
+        cleanLower.includes("bhabi") ||
+        cleanLower.includes("secure link")
+      ) {
+        reply =
+          chosenLang === "bn"
+            ? "জি স্যার, ভাবির সাথে সিকিউর লিংক এনক্রিপ্টেড ভয়েস কল সংযুক্ত করা হচ্ছে..."
+            : "Yes Sir, establishing secure link encrypted voice channel to Bhabi...";
       } else {
         reply =
           chosenLang === "bn"

@@ -27,7 +27,7 @@ export interface VoiceProcessResult {
   replyText: string;
   isSleepCommand?: boolean;
   isWakeCommand?: boolean;
-  actionType?: "news" | "weather" | "search" | "social" | "vision" | "general";
+  actionType?: "news" | "weather" | "search" | "social" | "vision" | "call" | "general";
   actionPayload?: unknown;
   voiceConfig: {
     pitch: number;
@@ -202,7 +202,7 @@ export class VoiceService {
     let reply = "";
     let isSleepCommand = false;
     let isWakeCommand = false;
-    let actionType: "news" | "weather" | "search" | "social" | "vision" | "general" = "general";
+    let actionType: "news" | "weather" | "search" | "social" | "vision" | "call" | "general" = "general";
     let actionPayload: unknown = null;
 
     // 1. Sleep Mode Command
@@ -358,7 +358,25 @@ export class VoiceService {
       reply = lang === "bn" ? visionResult.spokenFeedback : visionResult.spokenFeedbackEnglish;
       actionPayload = visionResult;
     }
-    // 8. Conversational & Persona Answers
+    // 8. Secure Link Call (Matching Video 4: ZARA/LYRA SECURE LINK call to Bhabi)
+    else if (
+      clean.includes("call") ||
+      clean.includes("কল দাও") ||
+      clean.includes("কল করো") ||
+      clean.includes("ফোন দাও") ||
+      clean.includes("ফোন করো") ||
+      clean.includes("ভাবি") ||
+      clean.includes("bhabi") ||
+      clean.includes("secure link") ||
+      clean.includes("সিকিউর লিংক")
+    ) {
+      actionType = "call";
+      reply =
+        lang === "bn"
+          ? "জি স্যার, ভাবির সাথে এনক্রিপ্টেড সিকিউর লিংক কল সংযুক্ত করা হচ্ছে..."
+          : "Yes Sir, establishing secure link encrypted voice channel to Bhabi...";
+    }
+    // 9. Conversational & Persona Answers
     else if (lang === "bn") {
       if (
         clean.includes("কেমন আছ") ||
