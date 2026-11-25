@@ -30,9 +30,21 @@ interface Props {
 export default function RightStreamHud({ dbStatus = "Connected" }: Props) {
   const [services, setServices] = useState(INITIAL_SERVICES);
   const [neuralLoad, setNeuralLoad] = useState(74);
+  const [activeModel, setActiveModel] = useState<"gemini-2.0-flash" | "claude-3-5-sonnet">("gemini-2.0-flash");
+  const [switching, setSwitching] = useState(false);
 
   // Subtle real-time latency updates for live futuristic feel
   useEffect(() => {
+    // Fetch active model
+    fetch("/api/ai/models")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.data?.activeModel) {
+          setActiveModel(data.data.activeModel.includes("claude") ? "claude-3-5-sonnet" : "gemini-2.0-flash");
+        }
+      })
+      .catch(() => {});
+
     const interval = setInterval(() => {
       setServices((prev) =>
         prev.map((s) => ({
@@ -44,6 +56,19 @@ export default function RightStreamHud({ dbStatus = "Connected" }: Props) {
     }, 2800);
     return () => clearInterval(interval);
   }, []);
+
+  const handleSelectModel = async (model: "gemini-2.0-flash" | "claude-3-5-sonnet") => {
+    setActiveModel(model);
+    setSwitching(true);
+    try {
+      await fetch("/api/ai/models", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ model })
+      });
+    } catch {}
+    setTimeout(() => setSwitching(false), 400);
+  };
 
   return (
     <div className="relative flex flex-col justify-between rounded-3xl border border-white/10 bg-gradient-to-b from-[#0e0c1f]/90 via-[#0a0817]/90 to-[#05040d]/95 p-5 shadow-2xl backdrop-blur-2xl">
@@ -147,25 +172,85 @@ export default function RightStreamHud({ dbStatus = "Connected" }: Props) {
           </div>
         </div>
 
-        {/* Model Latency & Inference Meters (Exact Video 3 Match!) */}
+        {/* Model Latency & Inference Selector (Google Gemini & Claude 3.5 Sonnet) */}
         <div className="mt-3 space-y-2 pt-2 border-t border-white/5 font-mono text-[11px]">
-          <div>
-            <div className="flex items-center justify-between text-gray-300 mb-1">
-              <span className="text-[10px] text-gray-400">Claude 3.5 Sonnet</span>
-              <span className="text-emerald-400 font-bold text-[10px]">37% • 1.1s</span>
-            </div>
-            <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full w-[37%]" />
-            </div>
+          <div className="flex items-center justify-between text-gray-400 text-[10px] uppercase font-bold tracking-wider mb-1">
+            <span>AI Brain Engine</span>
+            <span className="text-cyan-400">{switching ? "Switching..." : "Interactive"}</span>
           </div>
 
-          <div>
+          {/* Google Gemini 2.0 Flash Button */}
+          <button
+            type="button"
+            onClick={() => handleSelectModel("gemini-2.0-flash")}
+            className={`w-full text-left p-2 rounded-xl transition border cursor-pointer ${
+              activeModel === "gemini-2.0-flash"
+                ? "bg-cyan-950/40 border-cyan-500/50 shadow-[0_0_12px_rgba(0,240,255,0.15)]"
+                : "bg-white/[0.02] border-white/5 hover:bg-white/[0.05]"
+            }`}
+          >
             <div className="flex items-center justify-between text-gray-300 mb-1">
-              <span className="text-[10px] text-gray-400">ElevenLabs Neural Voice</span>
-              <span className="text-cyan-400 font-bold text-[10px]">29% • 0.3s</span>
+              <span className="text-[11px] font-semibold text-white flex items-center gap-1.5">
+                <span
+                  className={`h-2 w-2 rounded-full ${
+                    activeModel === "gemini-2.0-flash" ? "bg-cyan-400 animate-pulse" : "bg-gray-500"
+                  }`}
+                />
+                Google Gemini 2.0 Flash
+              </span>
+              <span className="text-cyan-400 font-bold text-[10px]">
+                {activeModel === "gemini-2.0-flash" ? "● ACTIVE • 0.4s" : "STANDBY • 0.4s"}
+              </span>
             </div>
             <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-cyan-500 to-violet-500 rounded-full w-[29%]" />
+              <div
+                className={`h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full transition-all duration-500 ${
+                  activeModel === "gemini-2.0-flash" ? "w-[65%]" : "w-[20%]"
+                }`}
+              />
+            </div>
+          </button>
+
+          {/* Anthropic Claude 3.5 Sonnet Button */}
+          <button
+            type="button"
+            onClick={() => handleSelectModel("claude-3-5-sonnet")}
+            className={`w-full text-left p-2 rounded-xl transition border cursor-pointer ${
+              activeModel === "claude-3-5-sonnet"
+                ? "bg-amber-950/40 border-amber-500/50 shadow-[0_0_12px_rgba(245,158,11,0.15)]"
+                : "bg-white/[0.02] border-white/5 hover:bg-white/[0.05]"
+            }`}
+          >
+            <div className="flex items-center justify-between text-gray-300 mb-1">
+              <span className="text-[11px] font-semibold text-white flex items-center gap-1.5">
+                <span
+                  className={`h-2 w-2 rounded-full ${
+                    activeModel === "claude-3-5-sonnet" ? "bg-amber-400 animate-pulse" : "bg-gray-500"
+                  }`}
+                />
+                Claude 3.5 Sonnet
+              </span>
+              <span className="text-amber-400 font-bold text-[10px]">
+                {activeModel === "claude-3-5-sonnet" ? "● ACTIVE • 1.1s" : "STANDBY • 1.1s"}
+              </span>
+            </div>
+            <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+              <div
+                className={`h-full bg-gradient-to-r from-amber-500 to-emerald-500 rounded-full transition-all duration-500 ${
+                  activeModel === "claude-3-5-sonnet" ? "w-[72%]" : "w-[25%]"
+                }`}
+              />
+            </div>
+          </button>
+
+          {/* ElevenLabs / Bengali Neural Voice */}
+          <div className="p-2 rounded-xl bg-white/[0.02] border border-white/5">
+            <div className="flex items-center justify-between text-gray-300 mb-1">
+              <span className="text-[10px] text-gray-400">Sweet Female Bengali Voice (লায়রা)</span>
+              <span className="text-emerald-400 font-bold text-[10px]">ONLINE • 0.2s</span>
+            </div>
+            <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full w-[40%]" />
             </div>
           </div>
         </div>

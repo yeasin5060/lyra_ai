@@ -9,7 +9,7 @@ interface Props {
 
 export default function TopNav({ apiStatus }: Props) {
   const handleQuickTest = () => {
-    softVoiceSynthesizer.speak("হ্যালো! লায়রা ভয়েস এবং মিডিয়া কন্ট্রোল সম্পূর্ণ অনলাইনে আছে।", {
+    softVoiceSynthesizer.speak("হ্যালো ইয়াসিন স্যার! আমি লায়রা। গুগল জেমিনাই এবং ক্লড এআই মডেলের সাথে আমার বাংলা ভয়েস ইঞ্জিন সম্পূর্ণ সচল আছে।", {
       language: "bn",
       pitch: 1.15,
       rate: 0.94

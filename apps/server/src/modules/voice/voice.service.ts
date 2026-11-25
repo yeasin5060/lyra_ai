@@ -1,6 +1,7 @@
 import { mediaPlatformService } from "../media/media.service.js";
 import { worldIntelligenceService } from "../world/world.service.js";
 import { visionIntelligenceService } from "../vision/vision.service.js";
+import { llmService } from "../ai/llm.service.js";
 
 export interface LanguageDetectionResult {
   language: "bn" | "en" | "mixed";
@@ -376,45 +377,22 @@ export class VoiceService {
           ? "জি স্যার, ভাবির সাথে এনক্রিপ্টেড সিকিউর লিংক কল সংযুক্ত করা হচ্ছে..."
           : "Yes Sir, establishing secure link encrypted voice channel to Bhabi...";
     }
-    // 9. Conversational & Persona Answers
-    else if (lang === "bn") {
-      if (
-        clean.includes("কেমন আছ") ||
-        clean.includes("কেমন আছেন") ||
-        clean.includes("কি খবর")
-      ) {
+    // 9. Conversational & Persona Answers via Claude & Gemini Neural Models
+    else {
+      try {
+        const llmResult = await llmService.generateReply(text, [], { language: lang });
+        reply = llmResult.reply;
+        actionPayload = {
+          modelUsed: llmResult.modelUsed,
+          provider: llmResult.provider,
+          latencyMs: llmResult.latencyMs
+        };
+      } catch (err) {
+        console.warn("LLM generation fallback in VoiceService:", err);
         reply =
-          "আমি খুব ভালো আছি ইয়াসিন স্যার! আশা করি আপনার দিনটিও চমৎকার কাটছে। আপনার ফেসবুক, লিঙ্কডইন, আজকের তাজা খবর বা কোনো কাজের আপডেট জানতে চান?";
-      } else if (
-        clean.includes("তুমি কে") ||
-        clean.includes("তোমার নাম কি") ||
-        clean.includes("লায়রা")
-      ) {
-        reply =
-          "আমি লায়রা (LYRA), আপনার পার্সোনাল ফিমেল এআই অ্যাসিস্ট্যান্ট। আমি আপনার ফেসবুক, লিঙ্কডইন, হোয়াটসঅ্যাপ সহ সমস্ত ডিজিটাল অ্যাকাউন্ট ও বিশ্বের রিয়েল-টাইম তথ্য ও খবর তাৎক্ষণিকভাবে মুখে জানিয়ে দিতে পারি।";
-      } else if (clean.includes("সময়") || clean.includes("কয়টা বাজে")) {
-        const now = new Date().toLocaleTimeString("bn-BD", {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: true
-        });
-        reply = `এখন সময় প্রায় ${now}। আর কোনো খবর বা সোশ্যাল আপডেট দিতে হবে স্যার?`;
-      } else {
-        reply = `আমি আপনার কথাটি শুনেছি স্যার: "${text}"। আমি যেকোনো নির্দেশ কার্যকর করতে প্রস্তুত!`;
-      }
-    } else {
-      if (
-        clean.includes("how are you") ||
-        clean.includes("how's it going")
-      ) {
-        reply = "I am doing fantastic, thank you Sir! All your social channels and live world feeds are active. How may I assist you?";
-      } else if (
-        clean.includes("who are you") ||
-        clean.includes("your name")
-      ) {
-        reply = "I am LYRA, your personal female AI companion, managing your social accounts, Facebook, LinkedIn, live news, and web intelligence.";
-      } else {
-        reply = `I heard you clearly Sir: "${text}". Standing by for your command!`;
+          lang === "bn"
+            ? `জি ইয়াসিন স্যার, আমি আপনার কথাটি শুনেছি: "${text}"। আমি আপনার সেবায় সর্বদা প্রস্তুত!`
+            : `I heard you clearly Sir: "${text}". Standing by for your command!`;
       }
     }
 

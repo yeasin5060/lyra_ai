@@ -12,6 +12,7 @@ import mediaRoutes from "./modules/media/media.routes.js";
 import worldRoutes from "./modules/world/world.routes.js";
 import integrationsRoutes from "./modules/integrations/integrations.routes.js";
 import visionRoutes from "./modules/vision/vision.routes.js";
+import aiRoutes from "./modules/ai/ai.routes.js";
 import { errorHandler } from "./middleware/error-handler.js";
 
 const app: Express = express();
@@ -56,6 +57,7 @@ app.use("/api/media", mediaRoutes);
 app.use("/api/world", worldRoutes);
 app.use("/api/integrations", integrationsRoutes);
 app.use("/api/vision", visionRoutes);
+app.use("/api/ai", aiRoutes);
 app.use(errorHandler);
 
 export default app;

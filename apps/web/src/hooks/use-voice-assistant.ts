@@ -224,14 +224,23 @@ export function useVoiceAssistant() {
       setMessages((prev) => [...prev, userMsg]);
 
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-        const res = await fetch(`${apiUrl}/api/voice/process`, {
+        // First try relative Next.js route /api/voice/process, fallback to external backend if needed
+        let res = await fetch("/api/voice/process", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ text: query, language: chosenLang })
-        });
+        }).catch(() => null);
 
-        if (res.ok) {
+        if (!res || !res.ok) {
+          const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+          res = await fetch(`${apiUrl}/api/voice/process`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text: query, language: chosenLang })
+          }).catch(() => null);
+        }
+
+        if (res && res.ok) {
           const json = await res.json();
           const reply = json.data.replyText as string;
           const replyLang = (json.data.replyLanguage as "bn" | "en") || chosenLang;

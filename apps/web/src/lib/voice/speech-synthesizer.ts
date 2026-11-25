@@ -83,8 +83,8 @@ export class SoftFemaleVoiceSynthesizer {
 
   /**
    * Intelligently selects the best soft female voice.
-   * If Bengali voice is not installed in the Windows OS, it falls back to a sweet female voice
-   * rather than failing silently.
+   * If Bengali voice is not installed in the Windows OS, returns null so browser
+   * can use online Bengali speech without getting silenced by an English voice engine.
    */
   public findBestVoice(lang: "bn" | "en"): { voice: SpeechSynthesisVoice | null; isNativeLang: boolean } {
     const all = this.getAvailableVoices();
@@ -105,15 +105,9 @@ export class SoftFemaleVoiceSynthesizer {
       const anyBn = all.find((v) => v.lang.toLowerCase().startsWith("bn"));
       if (anyBn) return { voice: anyBn, isNativeLang: true };
 
-      // Look for Indian English female voice (good phonetic pronunciation of South Asian syllables)
-      const inEnglish = all.find(
-        (v) =>
-          v.lang.toLowerCase().includes("en-in") ||
-          v.name.toLowerCase().includes("india") ||
-          v.name.toLowerCase().includes("heera") ||
-          v.name.toLowerCase().includes("ravi")
-      );
-      if (inEnglish) return { voice: inEnglish, isNativeLang: false };
+      // No native Bengali voice found on this device; do NOT assign an English voice
+      // to avoid breaking Bengali Unicode pronunciation in Windows speech engines.
+      return { voice: null, isNativeLang: false };
     }
 
     // Default/English soft sweet female voice
@@ -156,8 +150,8 @@ export class SoftFemaleVoiceSynthesizer {
     // unless an authentic native Bengali TTS voice is already installed in the OS.
     if ((lang === "bn" || !isNativeLang) && typeof window !== "undefined") {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-        const ttsUrl = `${apiUrl}/api/voice/tts?text=${encodeURIComponent(text.trim())}&lang=${lang}`;
+        // Use relative Next.js route /api/voice/tts which works seamlessly on localhost:3000
+        const ttsUrl = `/api/voice/tts?text=${encodeURIComponent(text.trim())}&lang=${lang}`;
 
         const audio = new Audio(ttsUrl);
         this.currentAudio = audio;
@@ -182,8 +176,22 @@ export class SoftFemaleVoiceSynthesizer {
         };
 
         audio.onerror = () => {
-          console.warn("Server TTS audio streaming failed, falling back to Web Speech API");
-          this.speakWebSpeechFallback(text, lang, voice, options);
+          console.warn("Internal Next.js TTS route failed, attempting express server or Web Speech fallback");
+          // Try backend port 5000 if different
+          const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/voice/tts?text=${encodeURIComponent(text.trim())}&lang=${lang}`;
+          const fallbackAudio = new Audio(backendUrl);
+          fallbackAudio.onplay = () => {
+            this.isAudioPlaying = true;
+            options.onStart?.();
+          };
+          fallbackAudio.onended = markDone;
+          fallbackAudio.onerror = () => {
+            this.speakWebSpeechFallback(text, lang, voice, options);
+          };
+          const fbPromise = fallbackAudio.play();
+          if (fbPromise) {
+            fbPromise.catch(() => this.speakWebSpeechFallback(text, lang, voice, options));
+          }
         };
 
         const playPromise = audio.play();
@@ -231,11 +239,23 @@ export class SoftFemaleVoiceSynthesizer {
       (window as any).__lyraUtterance = utterance;
     }
 
-    if (voice) {
-      utterance.voice = voice;
-      utterance.lang = voice.lang;
+    const isNativeBnVoice = voice && voice.lang.toLowerCase().startsWith("bn");
+    if (lang === "bn") {
+      if (isNativeBnVoice) {
+        utterance.voice = voice;
+        utterance.lang = voice.lang;
+      } else {
+        // Never assign an English voice to Bengali script! Let browser handle bn-BD online
+        utterance.voice = null;
+        utterance.lang = "bn-BD";
+      }
     } else {
-      utterance.lang = lang === "bn" ? "bn-BD" : "en-US";
+      if (voice) {
+        utterance.voice = voice;
+        utterance.lang = voice.lang;
+      } else {
+        utterance.lang = "en-US";
+      }
     }
 
     utterance.pitch = options.pitch ?? (lang === "bn" ? 1.15 : 1.08);
