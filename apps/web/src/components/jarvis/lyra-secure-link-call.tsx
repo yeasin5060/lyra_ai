@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import { Mic, MicOff, PhoneOff, Volume2, ShieldCheck, Sparkles, X } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import { cyberAudio } from "./cyber-audio-engine";
 
 interface Props {

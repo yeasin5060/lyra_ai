@@ -250,6 +250,7 @@ export default function SatelliteConstellation({
             <AnimatePresence>
               {isHovered && (
                 <motion.div
+                  key={`tooltip-${node.id}`}
                   initial={{ opacity: 0, scale: 0.85, y: node.angleDeg > 0 ? 15 : -15 }}
                   animate={{ opacity: 1, scale: 1, y: node.angleDeg > 0 ? 25 : -25 }}
                   exit={{ opacity: 0, scale: 0.85 }}

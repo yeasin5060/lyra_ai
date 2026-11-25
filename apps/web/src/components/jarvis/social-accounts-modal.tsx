@@ -187,17 +187,23 @@ export default function SocialAccountsModal({
 }: Props) {
   const [activeTab, setActiveTab] = useState<"accounts" | "messages">("messages");
 
-  if (!isOpen) return null;
-
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl select-none">
+      {isOpen && (
         <motion.div
-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          className="relative w-full max-w-3xl overflow-hidden rounded-3xl border border-violet-500/30 bg-gradient-to-b from-[#0e0c1f] via-[#0d1222] to-[#06050e] p-6 shadow-[0_0_60px_rgba(139,92,246,0.3)] text-white"
+          key="social-modal-backdrop"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl select-none"
         >
+          <motion.div
+            key="social-modal-card"
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            className="relative w-full max-w-3xl overflow-hidden rounded-3xl border border-violet-500/30 bg-gradient-to-b from-[#0e0c1f] via-[#0d1222] to-[#06050e] p-6 shadow-[0_0_60px_rgba(139,92,246,0.3)] text-white"
+          >
           {/* Header */}
           <div className="flex items-center justify-between border-b border-white/10 pb-4">
             <div className="flex items-center gap-3">
@@ -401,7 +407,8 @@ export default function SocialAccountsModal({
             </div>
           )}
         </motion.div>
-      </div>
-    </AnimatePresence>
+      </motion.div>
+    )}
+  </AnimatePresence>
   );
 }

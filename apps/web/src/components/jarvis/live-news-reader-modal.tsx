@@ -85,8 +85,6 @@ export default function LiveNewsReaderModal({
   const [isTvMode, setIsTvMode] = useState(false);
   const [activeArticleIndex, setActiveArticleIndex] = useState(0);
 
-  if (!isOpen) return null;
-
   const displayList =
     articles && articles.length > 0
       ? articles
@@ -98,16 +96,24 @@ export default function LiveNewsReaderModal({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/85 backdrop-blur-xl select-none">
-        {/* Hologram Card / TV Reader Screen */}
+      {isOpen && (
         <motion.div
-          initial={{ opacity: 0, scale: 0.92, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.92, y: 20 }}
-          className={`relative overflow-hidden rounded-3xl border border-cyan-500/30 bg-gradient-to-b from-[#0c0a1a] via-[#09101b] to-[#04030a] p-5 sm:p-6 shadow-[0_0_80px_rgba(6,182,212,0.3)] text-white transition-all duration-300 flex flex-col ${
-            isTvMode ? "w-full max-w-6xl h-[92vh]" : "w-full max-w-2xl max-h-[88vh]"
-          }`}
+          key="live-news-modal-backdrop"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/85 backdrop-blur-xl select-none"
         >
+          {/* Hologram Card / TV Reader Screen */}
+          <motion.div
+            key="live-news-modal-card"
+            initial={{ opacity: 0, scale: 0.92, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.92, y: 20 }}
+            className={`relative overflow-hidden rounded-3xl border border-cyan-500/30 bg-gradient-to-b from-[#0c0a1a] via-[#09101b] to-[#04030a] p-5 sm:p-6 shadow-[0_0_80px_rgba(6,182,212,0.3)] text-white transition-all duration-300 flex flex-col ${
+              isTvMode ? "w-full max-w-6xl h-[92vh]" : "w-full max-w-2xl max-h-[88vh]"
+            }`}
+          >
           {/* Top Header Bar */}
           <div className="flex items-center justify-between border-b border-white/10 pb-3 shrink-0">
             <div className="flex items-center gap-3">
@@ -353,7 +359,8 @@ export default function LiveNewsReaderModal({
             </div>
           )}
         </motion.div>
-      </div>
-    </AnimatePresence>
+      </motion.div>
+    )}
+  </AnimatePresence>
   );
 }
