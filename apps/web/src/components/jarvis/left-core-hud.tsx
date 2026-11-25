@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Cpu,
   Tv,
@@ -49,6 +49,16 @@ export default function LeftCoreHud({
 }: Props) {
   const [activeTab, setActiveTab] = useState<"social" | "media" | "tv">("tv");
   const [activeModel, setActiveModel] = useState<"claude" | "gemini">("claude");
+  const [tick, setTick] = useState(0);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const interval = setInterval(() => {
+      setTick((t) => (t + 1) % 1000);
+    }, 140);
+    return () => clearInterval(interval);
+  }, []);
 
   const isSpeaking = state === "speaking";
   const isListening = state === "listening";
@@ -78,13 +88,14 @@ export default function LeftCoreHud({
           </span>
         </div>
 
-        {/* Audio Waveform Horizontal Line */}
+        {/* Audio Waveform Horizontal Line (Deterministic SSR with Smooth Client Tick) */}
         <div className="my-3 flex items-center justify-between gap-1 h-5 px-1 rounded-lg bg-[#040d07] border border-emerald-500/20">
           {Array.from({ length: 24 }).map((_, i) => {
             const factor = isSpeaking ? 0.9 : isListening ? 0.6 : 0.25;
+            const wavePhase = mounted ? tick * 0.4 : 0;
             const h = Math.max(
               15,
-              Math.floor(Math.sin(i * 0.5 + Date.now() / 200) * 40 * factor + 50 * factor)
+              Math.floor(Math.sin(i * 0.5 + wavePhase) * 35 * factor + 45 * factor)
             );
             return (
               <div

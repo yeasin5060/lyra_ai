@@ -54,27 +54,33 @@ export default function HudDigitalClock({
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center text-center select-none pt-1">
+    <div
+      suppressHydrationWarning
+      className="flex flex-col items-center justify-center text-center select-none pt-1"
+    >
       {/* 1. Large Digital Clock: 22:41:58 (Exact TV Photo Match) */}
-      <div className="flex items-baseline justify-center font-mono font-black tracking-tight text-white drop-shadow-[0_0_40px_rgba(34,197,94,0.35)]">
-        <span className="text-4xl sm:text-5xl lg:text-[3.5rem] leading-none text-white font-extrabold tracking-tight">
+      <div
+        suppressHydrationWarning
+        className="flex items-baseline justify-center font-mono font-black tracking-tight text-white drop-shadow-[0_0_40px_rgba(34,197,94,0.35)]"
+      >
+        <span suppressHydrationWarning className="text-4xl sm:text-5xl lg:text-[3.5rem] leading-none text-white font-extrabold tracking-tight">
           {timeStr.hours}:{timeStr.minutes}
         </span>
-        <span className="ml-1 text-2xl sm:text-3xl lg:text-[2.2rem] leading-none text-emerald-400 font-black">
+        <span suppressHydrationWarning className="ml-1 text-2xl sm:text-3xl lg:text-[2.2rem] leading-none text-emerald-400 font-black">
           :{timeStr.seconds}
         </span>
       </div>
 
       {/* 2. Subtitle: Good evening, Sir. LYRA at your service. (Sir highlighted in green) */}
-      <div className="mt-1 flex items-center justify-center gap-1.5 text-xs sm:text-sm font-medium text-gray-200">
-        <span>{greeting}</span>
+      <div suppressHydrationWarning className="mt-1 flex items-center justify-center gap-1.5 text-xs sm:text-sm font-medium text-gray-200">
+        <span suppressHydrationWarning>{greeting}</span>
         <span className="text-emerald-400 font-bold">Sir.</span>
         <span>{assistantName} at your service.</span>
       </div>
 
       {/* 3. Sub-subtitle: Sunday, 23 November 2026 • Rangpur 21°C ⛅ */}
-      <div className="mt-0.5 flex items-center justify-center gap-1.5 text-[11px] text-gray-400 font-mono">
-        <span>{dateStr}</span>
+      <div suppressHydrationWarning className="mt-0.5 flex items-center justify-center gap-1.5 text-[11px] text-gray-400 font-mono">
+        <span suppressHydrationWarning>{dateStr}</span>
         <span>•</span>
         <div className="flex items-center gap-1 text-gray-300">
           <span>Rangpur 21°C</span>
