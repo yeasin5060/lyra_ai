@@ -7,6 +7,7 @@ import {
   Globe,
   Mail,
   Users,
+  Eye,
   Share2,
   Activity,
   DollarSign,
@@ -67,16 +68,16 @@ const NODES_DATA: SatelliteNode[] = [
     queryPrompt: "আমার ইনবক্সে কি কোন নতুন মেসেজ বা ইমেইল আছে?"
   },
   {
-    id: "people",
-    name: "People",
-    labelBangla: "টিম ও কন্টাক্টস",
-    category: "Network & Relations",
-    icon: Users,
+    id: "vision",
+    name: "Vision",
+    labelBangla: "লাইরা ভিশন (ক্যামেরা)",
+    category: "Multimodal AI Eye",
+    icon: Eye,
     angleDeg: 45, // Bottom-Right
-    color: "#A855F7",
-    badge: "Synced",
-    statusText: "AI Architecture Team connected",
-    queryPrompt: "আমার টিম ও কন্টাক্টস লিস্টের আপডেট কি?"
+    color: "#06B6D4",
+    badge: "Optical AI",
+    statusText: "Face & Brother Recognition Active",
+    queryPrompt: "সামনে কে আছে দেখো এবং ক্যামেরা স্ক্যান করো"
   },
   {
     id: "social",

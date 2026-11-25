@@ -11,6 +11,7 @@ import voiceRoutes from "./modules/voice/voice.routes.js";
 import mediaRoutes from "./modules/media/media.routes.js";
 import worldRoutes from "./modules/world/world.routes.js";
 import integrationsRoutes from "./modules/integrations/integrations.routes.js";
+import visionRoutes from "./modules/vision/vision.routes.js";
 import { errorHandler } from "./middleware/error-handler.js";
 
 const app: Express = express();
@@ -34,8 +35,8 @@ app.use(
 // Better Auth must be before body parsers
 app.all("/api/auth/*splat", toNodeHandler(auth));
 
-app.use(express.json({ limit: "1mb" }));
-app.use(express.urlencoded({ extended: true, limit: "1mb" }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 app.use(
   "/api",
@@ -54,6 +55,7 @@ app.use("/api/voice", voiceRoutes);
 app.use("/api/media", mediaRoutes);
 app.use("/api/world", worldRoutes);
 app.use("/api/integrations", integrationsRoutes);
+app.use("/api/vision", visionRoutes);
 app.use(errorHandler);
 
 export default app;

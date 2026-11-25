@@ -13,7 +13,8 @@ import {
   Newspaper,
   Share2,
   ShieldCheck,
-  Globe
+  Globe,
+  Camera
 } from "lucide-react";
 import QuantumNeuralOrb from "./quantum-neural-orb";
 import SatelliteConstellation from "./satellite-constellation";
@@ -23,6 +24,7 @@ import RightStreamHud from "./right-stream-hud";
 import BottomSubtitleDock from "./bottom-subtitle-dock";
 import LiveNewsReaderModal, { type NewsItem } from "./live-news-reader-modal";
 import SocialAccountsModal from "./social-accounts-modal";
+import LyraVisionHud from "./lyra-vision-hud";
 import { cyberAudio } from "./cyber-audio-engine";
 
 interface Props {
@@ -61,6 +63,8 @@ export default function JarvisCockpit({
   // Modals
   const [isNewsModalOpen, setIsNewsModalOpen] = useState(false);
   const [isSocialModalOpen, setIsSocialModalOpen] = useState(false);
+  const [isVisionModalOpen, setIsVisionModalOpen] = useState(false);
+  const [visionInitialMode, setVisionInitialMode] = useState<"auto" | "brother" | "face">("auto");
   const [newsArticles, setNewsArticles] = useState<NewsItem[]>([
     {
       id: "prothomalo-1",
@@ -122,6 +126,35 @@ export default function JarvisCockpit({
       void fetchLiveNews();
     } else if (prompt.includes("সোশ্যাল")) {
       setIsSocialModalOpen(true);
+    } else if (
+      prompt.includes("ক্যামেরা") ||
+      prompt.includes("ভিশন") ||
+      prompt.includes("সামনে কে")
+    ) {
+      setVisionInitialMode("auto");
+      setIsVisionModalOpen(true);
+    }
+    onSubmitQuery?.(prompt);
+  };
+
+  const handleUserQuery = (prompt: string) => {
+    const clean = prompt.toLowerCase();
+    if (
+      clean.includes("camera") ||
+      clean.includes("ক্যামেরা") ||
+      clean.includes("vision") ||
+      clean.includes("ভিশন") ||
+      clean.includes("সামনে কে") ||
+      clean.includes("কে আছে দেখো") ||
+      clean.includes("ছোট ভাই") ||
+      clean.includes("ভাইকে চেনো")
+    ) {
+      if (clean.includes("ছোট ভাই") || clean.includes("ভাই")) {
+        setVisionInitialMode("brother");
+      } else {
+        setVisionInitialMode("auto");
+      }
+      setIsVisionModalOpen(true);
     }
     onSubmitQuery?.(prompt);
   };
@@ -203,6 +236,20 @@ export default function JarvisCockpit({
           >
             <Share2 size={13} />
             <span className="hidden sm:inline">সোশ্যাল ভল্ট</span>
+          </button>
+
+          {/* LYRA Multimodal Vision & Face Recognition (Zara Style Eye) */}
+          <button
+            onClick={() => {
+              cyberAudio.playNodeClick();
+              setVisionInitialMode("auto");
+              setIsVisionModalOpen(true);
+            }}
+            className="flex items-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/15 px-3 py-1.5 text-xs font-semibold text-emerald-200 transition hover:bg-emerald-500/30 shadow-sm"
+            title="Open LYRA Optical Vision & Face Recognition"
+          >
+            <Camera size={13} />
+            <span className="hidden sm:inline">লায়রা ভিশন</span>
           </button>
 
           {/* Theme Palette Switcher */}
@@ -323,12 +370,12 @@ export default function JarvisCockpit({
           transcript={transcript}
           lastResponse={lastResponse}
           onMicClick={onMicClick}
-          onSubmitText={onSubmitQuery}
+          onSubmitText={handleUserQuery}
           isSleeping={isSleeping}
         />
       </footer>
 
-      {/* Modals for Live News and Social Accounts */}
+      {/* Modals for Live News, Social Accounts & LYRA Vision */}
       <LiveNewsReaderModal
         isOpen={isNewsModalOpen}
         onClose={() => setIsNewsModalOpen(false)}
@@ -340,6 +387,13 @@ export default function JarvisCockpit({
         isOpen={isSocialModalOpen}
         onClose={() => setIsSocialModalOpen(false)}
         onAskAccount={(q) => onSubmitQuery?.(q)}
+      />
+
+      <LyraVisionHud
+        isOpen={isVisionModalOpen}
+        onClose={() => setIsVisionModalOpen(false)}
+        onSpeakFeedback={(text) => onSubmitQuery?.(text)}
+        initialMode={visionInitialMode}
       />
     </div>
   );

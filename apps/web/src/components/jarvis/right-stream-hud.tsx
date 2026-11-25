@@ -14,6 +14,7 @@ interface ServiceStreamItem {
 
 const INITIAL_SERVICES: ServiceStreamItem[] = [
   { id: "fb", name: "Facebook Webhook", type: "Messenger Protocol", pingMs: 34, status: "live", color: "#1877F2" },
+  { id: "vis", name: "LYRA Optical Eye", type: "Multimodal Vision", pingMs: 16, status: "live", color: "#00F0FF" },
   { id: "wa", name: "WhatsApp Bridge", type: "Real-time Daemon", pingMs: 12, status: "live", color: "#25D366" },
   { id: "ig", name: "Instagram API", type: "DM Synchronization", pingMs: 48, status: "live", color: "#E4405F" },
   { id: "gm", name: "Gmail Priority", type: "Cloud Auth Hook", pingMs: 22, status: "live", color: "#EA4335" },

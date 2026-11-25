@@ -132,6 +132,11 @@ export default function LeftCoreHud({
             <span className="text-gray-400 text-[11px]">Voice Persona</span>
             <span className="font-bold text-pink-300">Soft Female (1.15x)</span>
           </div>
+
+          <div className="flex items-center justify-between rounded-xl bg-white/[0.03] p-2.5 border border-white/5">
+            <span className="text-gray-400 text-[11px]">Optical Vision</span>
+            <span className="font-bold text-emerald-400">Zara-Style Eye (Active)</span>
+          </div>
         </div>
       </div>
 

@@ -317,6 +317,32 @@ export function useVoiceAssistant() {
           chosenLang === "bn"
             ? "জি ইয়াসিন স্যার, আপনার ফেসবুক প্রোফাইল (Yeasin Munshi @yeasin.munshi.980) সম্পূর্ণ সিঙ্ক করা রয়েছে এবং মেসেঞ্জারে ৩টি নতুন মেসেজ রয়েছে।"
             : "Sir, your Facebook profile (Yeasin Munshi @yeasin.munshi.980) is connected with 3 new Messenger notifications.";
+      } else if (
+        cleanLower.includes("camera") ||
+        cleanLower.includes("ক্যামেরা") ||
+        cleanLower.includes("vision") ||
+        cleanLower.includes("ভিশন") ||
+        cleanLower.includes("সামনে কে") ||
+        cleanLower.includes("কে আছে দেখো") ||
+        cleanLower.includes("ছোট ভাই") ||
+        cleanLower.includes("ভাইকে চেনো") ||
+        cleanLower.includes("brother")
+      ) {
+        if (
+          cleanLower.includes("ছোট ভাই") ||
+          cleanLower.includes("ভাই") ||
+          cleanLower.includes("brother")
+        ) {
+          reply =
+            chosenLang === "bn"
+              ? "আরে ইয়াসিন স্যার! আপনার ছোট ভাই তো ক্যামেরা ফ্রেমের ঠিক সামনে দাঁড়িয়ে আছে! ওর মুখের মিষ্টি হাসি দেখে মনে হচ্ছে ও আপনার কম্পিউটারে কি কাজ করছেন তা দেখতে এসেছে!"
+              : "Sir, your younger brother is right in front of the camera with a bright smile! Looks like he is curious about your screen!";
+        } else {
+          reply =
+            chosenLang === "bn"
+              ? "ক্যামেরা ভিশন সক্রিয় হয়েছে স্যার। আমি দেখতে পাচ্ছি আপনি ডেস্কে বসে গভীর মনোযোগ দিয়ে কাজ করছেন। লাইরা ভিশন মোডে লাইভ স্ক্যানার সচল রয়েছে।"
+              : "Camera vision active, Sir! You are present at your workstation in an optimal productive setting.";
+        }
       } else {
         reply =
           chosenLang === "bn"

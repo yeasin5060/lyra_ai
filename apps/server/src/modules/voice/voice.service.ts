@@ -1,5 +1,6 @@
 import { mediaPlatformService } from "../media/media.service.js";
 import { worldIntelligenceService } from "../world/world.service.js";
+import { visionIntelligenceService } from "../vision/vision.service.js";
 
 export interface LanguageDetectionResult {
   language: "bn" | "en" | "mixed";
@@ -26,7 +27,7 @@ export interface VoiceProcessResult {
   replyText: string;
   isSleepCommand?: boolean;
   isWakeCommand?: boolean;
-  actionType?: "news" | "weather" | "search" | "social" | "general";
+  actionType?: "news" | "weather" | "search" | "social" | "vision" | "general";
   actionPayload?: unknown;
   voiceConfig: {
     pitch: number;
@@ -201,7 +202,7 @@ export class VoiceService {
     let reply = "";
     let isSleepCommand = false;
     let isWakeCommand = false;
-    let actionType: "news" | "weather" | "search" | "social" | "general" = "general";
+    let actionType: "news" | "weather" | "search" | "social" | "vision" | "general" = "general";
     let actionPayload: unknown = null;
 
     // 1. Sleep Mode Command
@@ -329,7 +330,35 @@ export class VoiceService {
           ? "জি ইয়াসিন স্যার, আপনার ফেসবুক মেসেঞ্জার (yeasin.munshi.980) এবং লিঙ্কডইন (yeasin-munshi-aa7467288) সফলভাবে সংযুক্ত রয়েছে। ৬টি নতুন বার্তা পাওয়া গেছে। তানভীর আহমেদ, নাফিসা রহমান ও ডেভিড স্টার্লিং মেসেজ দিয়েছেন।"
           : "Sir, your Facebook Messenger (@yeasin.munshi.980) and LinkedIn account are connected with 6 incoming messages from Tanvir Ahmed, Nafisa Rahman, and David Sterling.");
     }
-    // 7. Conversational & Persona Answers
+    // 7. Multimodal Optical Vision & Face/Person Recognition (like Zara AI with Brother recognition)
+    else if (
+      clean.includes("camera") ||
+      clean.includes("ক্যামেরা") ||
+      clean.includes("vision") ||
+      clean.includes("ভিশন") ||
+      clean.includes("সামনে কে") ||
+      clean.includes("কে আছে দেখো") ||
+      clean.includes("কে বসে আছে") ||
+      clean.includes("ছোট ভাই") ||
+      clean.includes("ভাইকে চেনো") ||
+      clean.includes("brother") ||
+      clean.includes("আমাকে চেনো") ||
+      clean.includes("আমার দিকে তাকাও") ||
+      clean.includes("চোখ খোলো") ||
+      clean.includes("দেখো তো") ||
+      clean.includes("তাকাও")
+    ) {
+      actionType = "vision";
+      const isBro = clean.includes("ছোট ভাই") || clean.includes("ভাই") || clean.includes("brother");
+      const visionResult = await visionIntelligenceService.analyzeCameraFrame(
+        undefined,
+        clean,
+        isBro ? "brother" : "auto"
+      );
+      reply = lang === "bn" ? visionResult.spokenFeedback : visionResult.spokenFeedbackEnglish;
+      actionPayload = visionResult;
+    }
+    // 8. Conversational & Persona Answers
     else if (lang === "bn") {
       if (
         clean.includes("কেমন আছ") ||
