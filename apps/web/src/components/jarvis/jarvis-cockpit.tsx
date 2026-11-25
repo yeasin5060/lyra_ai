@@ -263,7 +263,7 @@ export default function JarvisCockpit({
         <div className="relative flex-1 flex items-center justify-center min-h-[380px] sm:min-h-[440px] lg:min-h-[480px] w-full order-1 lg:order-2">
           {/* 10 Orbiting Nodes with Laser Circuit Connectors */}
           <SatelliteConstellation
-            orbitRadius={200}
+            orbitRadius={190}
             onSelectNode={handleSelectNode}
           />
 

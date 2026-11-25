@@ -38,8 +38,8 @@ const NODES_DATA: SatelliteNode[] = [
     name: "Today",
     labelBangla: "আজকের শিডিউল",
     icon: Calendar,
-    angleDeg: -120, // Top-Left
-    radiusOffset: 0,
+    angleDeg: -115, // Top-Left (~11 o'clock)
+    radiusOffset: -5,
     queryPrompt: "আজকের মিটিং ও ক্যালেন্ডার শিডিউল কি?",
     statusText: "৩টি শিডিউল ইভেন্ট সক্রিয়"
   },
@@ -48,8 +48,8 @@ const NODES_DATA: SatelliteNode[] = [
     name: "Website",
     labelBangla: "ওয়েবসাইট ও ওয়েব",
     icon: Globe,
-    angleDeg: -45, // Top-Right
-    radiusOffset: 5,
+    angleDeg: -50, // Top-Right (~1 o'clock)
+    radiusOffset: 0,
     queryPrompt: "ওয়েব ব্রাউজার এবং রিয়েল-টাইম সার্চ স্ট্যাটাস কি?",
     statusText: "গুগল ও ওয়েব রিয়েল-টাইম সিঙ্ক"
   },
@@ -58,8 +58,8 @@ const NODES_DATA: SatelliteNode[] = [
     name: "Inbox",
     labelBangla: "ইনবক্স চ্যাট",
     icon: MessageSquare,
-    angleDeg: 0, // Far Right
-    radiusOffset: 25,
+    angleDeg: 0, // Far Right (~3 o'clock)
+    radiusOffset: 15,
     isSpecialHalo: true, // Special glowing green ring matching photo!
     queryPrompt: "আমার ইনবক্সের সমস্ত নতুন মেসেজ পড়ে শোনাও",
     statusText: "ফেসবুক, হোয়াটসঅ্যাপ ও লিঙ্কডইন চ্যাট"
@@ -69,8 +69,8 @@ const NODES_DATA: SatelliteNode[] = [
     name: "Social",
     labelBangla: "সোশ্যাল মিডিয়া",
     icon: Share2,
-    angleDeg: 35, // Bottom-Right
-    radiusOffset: 15,
+    angleDeg: 35, // Bottom-Right (~4 o'clock)
+    radiusOffset: 10,
     queryPrompt: "আমার সোশ্যাল মিডিয়ার আপডেট কি?",
     statusText: "ফেসবুক ও লিঙ্কডইন প্রোফাইল যুক্ত"
   },
@@ -79,7 +79,7 @@ const NODES_DATA: SatelliteNode[] = [
     name: "People",
     labelBangla: "পরিচিত ব্যক্তিবর্গ",
     icon: Users,
-    angleDeg: 65, // Bottom-Far-Right
+    angleDeg: 68, // Bottom-Far-Right (~5 o'clock)
     radiusOffset: 5,
     badgeCount: 2,
     queryPrompt: "আমার ফ্রেন্ড লিস্ট ও পরিচিতদের কি খবর?",
@@ -90,7 +90,7 @@ const NODES_DATA: SatelliteNode[] = [
     name: "Mail",
     labelBangla: "ইমেইল ও ইনমেইল",
     icon: Mail,
-    angleDeg: 105, // Bottom-Center-Right
+    angleDeg: 105, // Bottom-Center-Right (~6 o'clock)
     radiusOffset: -5,
     badgeCount: 4,
     queryPrompt: "আমার জিমেইল ও লিঙ্কডইন ইনমেইলে কি মেসেজ আছে?",
@@ -101,8 +101,8 @@ const NODES_DATA: SatelliteNode[] = [
     name: "Subs",
     labelBangla: "সাবস্ক্রিপশন",
     icon: CreditCard,
-    angleDeg: 140, // Bottom-Center-Left
-    radiusOffset: -10,
+    angleDeg: 140, // Bottom-Center-Left (~7 o'clock)
+    radiusOffset: -8,
     badgeCount: 1,
     queryPrompt: "আমার সার্ভিস সাবস্ক্রিপশন স্ট্যাটাস কি?",
     statusText: "১টি বিলিং সাইকেল আপডেট প্রয়োজন"
@@ -112,7 +112,7 @@ const NODES_DATA: SatelliteNode[] = [
     name: "Money",
     labelBangla: "ফাইন্যান্স ও আয়",
     icon: DollarSign,
-    angleDeg: 170, // Bottom-Left
+    angleDeg: 170, // Bottom-Left (~8 o'clock)
     radiusOffset: 0,
     queryPrompt: "বর্তমান ফাইন্যান্স ও রেভিনিউ ব্যালেন্স কত?",
     statusText: "ব্যালেন্স ও পেপ্যাল স্ট্যাটাস স্বাভাবিক"
@@ -122,8 +122,8 @@ const NODES_DATA: SatelliteNode[] = [
     name: "Stock",
     labelBangla: "স্টক ও ট্রেড",
     icon: TrendingUp,
-    angleDeg: 200, // Far Left
-    radiusOffset: 15,
+    angleDeg: 198, // Far Left (~9 o'clock)
+    radiusOffset: 10,
     badgeCount: 1,
     queryPrompt: "মার্কেট ও স্টক ইনডেক্সের হালনাগাদ কি?",
     statusText: "১টি ইনডেক্স অ্যালার্ট পাওয়া গেছে"
@@ -133,8 +133,8 @@ const NODES_DATA: SatelliteNode[] = [
     name: "Orders",
     labelBangla: "অর্ডার ও পার্সেল",
     icon: Package,
-    angleDeg: 240, // Top-Left
-    radiusOffset: 10,
+    angleDeg: 240, // Top-Left (~10 o'clock)
+    radiusOffset: 5,
     badgeCount: 1,
     queryPrompt: "আমার অনলাইন অর্ডার ও পার্সেলের কি খবর?",
     statusText: "১টি পার্সেল ডেলিভারির পথে আছে"
@@ -148,19 +148,25 @@ interface Props {
 }
 
 export default function SatelliteConstellation({
-  orbitRadius = 220,
+  orbitRadius = 190,
   onSelectNode
 }: Props) {
   const [activeHoverNode, setActiveHoverNode] = useState<string | null>(null);
 
-  // Elliptical radii to match wide TV aspect ratio
-  const rx = orbitRadius * 1.35;
-  const ry = orbitRadius * 0.95;
+  // Exact elliptical radii to comfortably surround the orb without colliding with top clock or bottom dock
+  const rx = orbitRadius * 1.25; // ~237px
+  const ry = orbitRadius * 0.82; // ~155px
 
   return (
-    <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-10">
-      {/* SVG Circuit Lines & Organic Circuit Field */}
+    <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-10 overflow-visible">
+      {/* 
+        SVG Circuit Lines & Laser Pulse Animations:
+        Uses viewBox="-400 -260 800 520" so (0,0) is GUARANTEED to be the DEAD CENTER of the plasma orb.
+        Zero translate(50%, 50%) bug, ensuring laser animations NEVER drift to the top of the screen!
+      */}
       <svg
+        viewBox="-400 -260 800 520"
+        preserveAspectRatio="xMidYMid meet"
         className="absolute inset-0 w-full h-full pointer-events-none overflow-visible"
         style={{ filter: "drop-shadow(0 0 8px rgba(34, 197, 94, 0.35))" }}
       >
@@ -170,37 +176,32 @@ export default function SatelliteConstellation({
             <stop offset="70%" stopColor="#16a34a" stopOpacity="0.3" />
             <stop offset="100%" stopColor="transparent" stopOpacity="0" />
           </radialGradient>
-
-          <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="rgba(34, 197, 94, 0.5)" />
-            <stop offset="100%" stopColor="rgba(74, 222, 128, 0.15)" />
-          </linearGradient>
         </defs>
 
-        {/* Organic Orbiting Ring Path */}
-        <g transform="translate(50%, 50%)">
-          <ellipse
-            cx="0"
-            cy="0"
-            rx={rx}
-            ry={ry}
-            fill="none"
-            stroke="rgba(34, 197, 94, 0.15)"
-            strokeWidth="1.2"
-            strokeDasharray="4 6"
-          />
-          <ellipse
-            cx="0"
-            cy="0"
-            rx={rx * 0.65}
-            ry={ry * 0.65}
-            fill="none"
-            stroke="rgba(34, 197, 94, 0.08)"
-            strokeWidth="1"
-          />
-        </g>
+        {/* Outer Orbit Ellipse centered at (0,0) */}
+        <ellipse
+          cx="0"
+          cy="0"
+          rx={rx}
+          ry={ry}
+          fill="none"
+          stroke="rgba(34, 197, 94, 0.16)"
+          strokeWidth="1.2"
+          strokeDasharray="4 6"
+        />
 
-        {/* Connecting Laser Lines from Center to each Node */}
+        {/* Inner subtle orbit contour */}
+        <ellipse
+          cx="0"
+          cy="0"
+          rx={rx * 0.7}
+          ry={ry * 0.7}
+          fill="none"
+          stroke="rgba(34, 197, 94, 0.08)"
+          strokeWidth="1"
+        />
+
+        {/* 10 Connecting Laser Lines & Animated Energy Beads */}
         {NODES_DATA.map((node) => {
           const rad = (node.angleDeg * Math.PI) / 180;
           const nodeRx = rx + (node.radiusOffset || 0);
@@ -208,35 +209,36 @@ export default function SatelliteConstellation({
           const nx = Math.cos(rad) * nodeRx;
           const ny = Math.sin(rad) * nodeRy;
 
-          // Inner attachment point on central orb
-          const innerR = 75;
+          // Inner attachment point on central plasma orb
+          const innerR = 60;
           const ix = Math.cos(rad) * innerR;
           const iy = Math.sin(rad) * innerR;
 
           const isHovered = activeHoverNode === node.id;
 
           return (
-            <g key={`circuit-line-${node.id}`} transform="translate(50%, 50%)">
+            <g key={`circuit-line-${node.id}`}>
+              {/* Connecting laser trace */}
               <line
                 x1={ix}
                 y1={iy}
                 x2={nx}
                 y2={ny}
-                stroke={isHovered ? "rgba(74, 222, 128, 0.85)" : "rgba(34, 197, 94, 0.28)"}
-                strokeWidth={isHovered ? 1.8 : 1}
+                stroke={isHovered ? "rgba(74, 222, 128, 0.9)" : "rgba(34, 197, 94, 0.32)"}
+                strokeWidth={isHovered ? 2 : 1.1}
                 strokeDasharray={isHovered ? "none" : "3 5"}
                 className="transition-all duration-300"
               />
 
-              {/* Energy pulse bead on line */}
+              {/* Pulsing energy bead traveling along line */}
               <circle
-                r={isHovered ? 2.5 : 1.5}
+                r={isHovered ? 2.8 : 1.8}
                 fill="#86efac"
-                opacity={isHovered ? 0.9 : 0.6}
+                opacity={isHovered ? 0.95 : 0.65}
               >
                 <animateMotion
                   path={`M ${ix} ${iy} L ${nx} ${ny}`}
-                  dur={`${3 + (node.angleDeg % 3)}s`}
+                  dur={`${2.8 + ((node.angleDeg + 360) % 5) * 0.4}s`}
                   repeatCount="indefinite"
                 />
               </circle>
@@ -245,14 +247,14 @@ export default function SatelliteConstellation({
         })}
       </svg>
 
-      {/* Orbiting Interactive Node Pills */}
-      <div className="relative w-full h-full flex items-center justify-center">
+      {/* Orbiting Interactive Node Pills: Anchor at 50% / 50% with exact offset */}
+      <div className="absolute inset-0 pointer-events-none overflow-visible">
         {NODES_DATA.map((node) => {
           const rad = (node.angleDeg * Math.PI) / 180;
           const nodeRx = rx + (node.radiusOffset || 0);
           const nodeRy = ry + (node.radiusOffset || 0);
-          const x = Math.cos(rad) * nodeRx;
-          const y = Math.sin(rad) * nodeRy;
+          const nx = Math.cos(rad) * nodeRx;
+          const ny = Math.sin(rad) * nodeRy;
 
           const IconComponent = node.icon;
           const isHovered = activeHoverNode === node.id;
@@ -261,13 +263,15 @@ export default function SatelliteConstellation({
             <div
               key={node.id}
               style={{
-                transform: `translate(${x}px, ${y}px)`
+                left: "50%",
+                top: "50%",
+                transform: `translate(calc(-50% + ${nx}px), calc(-50% + ${ny}px))`
               }}
-              className="absolute pointer-events-auto flex flex-col items-center justify-center -translate-x-1/2 -translate-y-1/2"
+              className="absolute pointer-events-auto flex flex-col items-center justify-center"
             >
-              {/* Special Halo for Inbox Node matching Photo */}
+              {/* Special Double Halo for Inbox Node matching TV Screen Photo */}
               {node.isSpecialHalo && (
-                <div className="absolute -inset-2.5 rounded-full border border-emerald-400/60 shadow-[0_0_20px_rgba(34,197,94,0.45)] pointer-events-none animate-pulse" />
+                <div className="absolute -inset-2 rounded-full border border-emerald-400/60 shadow-[0_0_20px_rgba(34,197,94,0.45)] pointer-events-none animate-pulse" />
               )}
 
               {/* Circular Node Button */}
@@ -283,19 +287,19 @@ export default function SatelliteConstellation({
                   cyberAudio.playNodeHover();
                 }}
                 onMouseLeave={() => setActiveHoverNode(null)}
-                className={`relative flex items-center justify-center h-10 w-10 sm:h-12 sm:w-12 rounded-full border transition-all duration-300 ${
+                className={`relative flex items-center justify-center h-10 w-10 sm:h-11 sm:w-11 rounded-full border transition-all duration-300 ${
                   node.isSpecialHalo
                     ? "bg-[#092213] border-emerald-400 text-emerald-300 shadow-[0_0_15px_rgba(34,197,94,0.6)]"
                     : isHovered
                     ? "bg-[#0c2e1a] border-emerald-300 text-white shadow-[0_0_15px_rgba(34,197,94,0.5)]"
-                    : "bg-[#07170e]/90 border-emerald-500/40 text-emerald-400/90 hover:border-emerald-400 shadow-md"
+                    : "bg-[#07170e]/95 border-emerald-500/40 text-emerald-400/90 hover:border-emerald-400 shadow-md"
                 }`}
               >
-                <IconComponent size={18} className="sm:text-xl" />
+                <IconComponent size={17} className="sm:text-lg" />
 
                 {/* Coral/Pink Notification Count Badge matching Photo */}
                 {node.badgeCount !== undefined && node.badgeCount > 0 && (
-                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[9px] font-bold text-white shadow-sm ring-1 ring-[#04030a]">
+                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[9px] font-bold text-white shadow-sm ring-1 ring-[#020604]">
                     {node.badgeCount}
                   </span>
                 )}
@@ -303,7 +307,7 @@ export default function SatelliteConstellation({
 
               {/* Node Title Label under icon */}
               <span
-                className={`mt-1.5 text-[10px] sm:text-[11px] font-mono tracking-wider font-semibold transition-colors duration-200 ${
+                className={`mt-1 text-[10px] sm:text-[11px] font-mono tracking-wider font-semibold transition-colors duration-200 ${
                   node.isSpecialHalo
                     ? "text-emerald-300 font-bold"
                     : isHovered
