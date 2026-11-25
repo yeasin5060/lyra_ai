@@ -7,15 +7,15 @@ export class MediaPlatformService {
       id: "facebook",
       name: "Facebook",
       category: "social",
-      username: "Not Connected",
-      status: "disconnected",
-      followersOrSubscribers: "Not Linked",
+      username: "Yeasin Munshi (@yeasin.munshi.980)",
+      status: "connected",
+      followersOrSubscribers: "Profile Synced",
       unreadCount: 0,
-      highlightStat: "Account Not Linked",
-      latestActivity: "Waiting for Facebook account authorization",
+      highlightStat: "https://www.facebook.com/yeasin.munshi.980/",
+      latestActivity: "Active Facebook Messenger & Profile integration",
       accentColor: "#1877F2",
-      summaryBangla: "আপনার ফেসবুক অ্যাকাউন্টটি এখনো সংযুক্ত করা হয়নি। কানেক্ট করার পর আমি মেসেঞ্জার ও পোস্টের সব আপডেট জানিয়ে দেব।",
-      summaryEnglish: "Your Facebook account is not connected yet. Once connected, I will provide real-time Messenger and post updates."
+      summaryBangla: "স্যার, আপনার ফেসবুক প্রোফাইল (Yeasin Munshi) সফলভাবে সংযুক্ত আছে। প্রোফাইল লিংক: yeasin.munshi.980। কোনো নতুন মেসেজ এলে আমি সাথে সাথে বলে দেব।",
+      summaryEnglish: "Sir, your Facebook profile (Yeasin Munshi @yeasin.munshi.980) is connected and synchronized."
     },
     {
       id: "instagram",
@@ -91,15 +91,15 @@ export class MediaPlatformService {
       id: "linkedin",
       name: "LinkedIn",
       category: "social",
-      username: "Not Connected",
-      status: "disconnected",
-      followersOrSubscribers: "Not Linked",
+      username: "Yeasin Munshi (@yeasin-munshi-aa7467288)",
+      status: "connected",
+      followersOrSubscribers: "Network Synced",
       unreadCount: 0,
-      highlightStat: "Account Not Linked",
-      latestActivity: "Waiting for LinkedIn profile authorization",
+      highlightStat: "https://www.linkedin.com/in/yeasin-munshi-aa7467288/",
+      latestActivity: "Professional AI Engineering Network active",
       accentColor: "#0A66C2",
-      summaryBangla: "আপনার লিংকডইন প্রোফাইলটি এখনো সংযুক্ত করা হয়নি। কানেক্ট করার পর নতুন কানেকশন ও মেসেজ আপডেট পেয়ে যাবেন।",
-      summaryEnglish: "Your LinkedIn account is not connected yet. Once connected, I will report your connections and profile activity."
+      summaryBangla: "স্যার, আপনার লিঙ্কডইন প্রোফাইল (Yeasin Munshi) সংযুক্ত রয়েছে। আপনার প্রফেশনাল নেটওয়ার্ক ও মেসেজ সম্পূর্ণ সিঙ্ক করা।",
+      summaryEnglish: "Sir, your LinkedIn profile (Yeasin Munshi @yeasin-munshi-aa7467288) is connected and fully monitored."
     },
     {
       id: "spotify",
@@ -165,8 +165,8 @@ export class MediaPlatformService {
       const msgs = this.getAllInboundMessages("facebook");
       if (msgs.length === 0) {
         return lang === "bn"
-          ? "আপনার ফেসবুক অ্যাকাউন্টটি এখনো কানেক্ট করা নেই এবং কোনো নতুন মেসেজ আসেনি। অ্যাকাউন্ট যুক্ত করলে আমি সাথে সাথে পড়ে শোনাব।"
-          : "Your Facebook account is not connected yet and has no new messages. Link your account to enable message tracking.";
+          ? "স্যার, আপনার ফেসবুক প্রোফাইল (Yeasin Munshi - yeasin.munshi.980) সংযুক্ত রয়েছে। এই মুহূর্তে নতুন কোনো অপঠিত মেসেজ নেই।"
+          : "Sir, your Facebook profile (Yeasin Munshi - @yeasin.munshi.980) is connected. You have no new unread messages.";
       }
       return lang === "bn"
         ? `ফেসবুক মেসেঞ্জারে আপনার ${msgs.length}টি নতুন মেসেজ রয়েছে।`

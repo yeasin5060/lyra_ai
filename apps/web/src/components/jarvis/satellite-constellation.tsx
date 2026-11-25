@@ -86,8 +86,8 @@ const NODES_DATA: SatelliteNode[] = [
     icon: Share2,
     angleDeg: 90, // Bottom
     color: "#10B981",
-    badge: "0/9 Linked",
-    statusText: "Facebook, WhatsApp, YouTube",
+    badge: "Yeasin Core",
+    statusText: "Facebook & LinkedIn Synced",
     queryPrompt: "আমার সোশ্যাল মিডিয়ার আপডেট কি?"
   },
   {

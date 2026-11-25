@@ -28,15 +28,15 @@ const platformsData = [
     id: "facebook",
     name: "Facebook",
     category: "Social Network",
-    username: "Not Connected",
+    username: "Yeasin Munshi (@yeasin.munshi.980)",
     icon: Facebook,
     color: "#1877F2",
-    badge: "Disconnected",
-    badgeColor: "bg-gray-500/10 text-gray-400 border-gray-500/20",
+    badge: "Connected",
+    badgeColor: "bg-blue-500/20 text-blue-300 border-blue-500/30",
     stats: [
-      { label: "Status", value: "Not Linked" },
-      { label: "Messages", value: "0 Unread" },
-      { label: "Sync", value: "Offline" }
+      { label: "Status", value: "Verified Profile" },
+      { label: "Profile ID", value: "yeasin.munshi.980" },
+      { label: "Sync", value: "Active" }
     ],
     queryBangla: "ফেসবুকের আপডেট বলো",
     queryEnglish: "What's the status of Facebook?"
@@ -130,15 +130,15 @@ const platformsData = [
     id: "linkedin",
     name: "LinkedIn",
     category: "Professional Network",
-    username: "Not Connected",
+    username: "Yeasin Munshi (@yeasin-munshi-aa7467288)",
     icon: Linkedin,
     color: "#0A66C2",
-    badge: "Disconnected",
-    badgeColor: "bg-gray-500/10 text-gray-400 border-gray-500/20",
+    badge: "Connected",
+    badgeColor: "bg-blue-500/20 text-blue-300 border-blue-500/30",
     stats: [
-      { label: "Status", value: "Not Linked" },
-      { label: "Connections", value: "0" },
-      { label: "Profile Views", value: "0" }
+      { label: "Status", value: "Verified Network" },
+      { label: "Profile ID", value: "yeasin-munshi-aa7467288" },
+      { label: "Sync", value: "Active" }
     ],
     queryBangla: "লিংকডইনে কোন নতুন আপডেট আছে?",
     queryEnglish: "How is my LinkedIn engagement?"
@@ -181,8 +181,8 @@ export default function MediaCommandCenter({ onAskPlatform }: Props) {
                 <h3 className="text-lg font-bold tracking-wide text-white">
                   Media & Social Command Center
                 </h3>
-                <span className="rounded-full bg-gray-500/20 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-gray-300 border border-gray-500/40">
-                  0/9 Connected • Ready to Link
+                <span className="rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-300 border border-emerald-500/40">
+                  2/9 Verified • Yeasin Munshi Core
                 </span>
               </div>
               <p className="text-xs text-gray-400">

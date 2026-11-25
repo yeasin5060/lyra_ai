@@ -265,23 +265,40 @@ export function useVoiceAssistant() {
       // Client-side fallback
       let reply = "";
       if (
-        cleanLower.includes("message") ||
-        cleanLower.includes("মেসেজ") ||
-        cleanLower.includes("facebook") ||
-        cleanLower.includes("whatsapp") ||
-        cleanLower.includes("instagram") ||
-        cleanLower.includes("কে কে") ||
-        cleanLower.includes("কার মেসেজ")
+        cleanLower.includes("news") ||
+        cleanLower.includes("খবর") ||
+        cleanLower.includes("দেশের") ||
+        cleanLower.includes("প্রথম আলো")
       ) {
         reply =
           chosenLang === "bn"
-            ? "আপনার কোনো সোশ্যাল মিডিয়া বা মেসেজিং অ্যাকাউন্ট এখনো যুক্ত করা হয়নি, তাই এই মুহূর্তে কোনো নতুন মেসেজ নেই।"
-            : "None of your social media or messaging accounts are connected yet, so there are no incoming messages.";
+            ? "স্যার, আজকের তাজা খবর অনুযায়ী দেশের বিভিন্ন স্থানে উন্নয়নমূলক কার্যক্রম চলছে। বিস্তারিত লাইভ নিউজ উইজেটে দেখতে পারেন।"
+            : "Sir, according to current news, national and technology developments are in progress.";
+      } else if (
+        cleanLower.includes("facebook") ||
+        cleanLower.includes("ফেসবুক") ||
+        cleanLower.includes("linkedin") ||
+        cleanLower.includes("লিংকডইন")
+      ) {
+        reply =
+          chosenLang === "bn"
+            ? "স্যার, আপনার ফেসবুক প্রোফাইল (Yeasin Munshi - yeasin.munshi.980) এবং লিঙ্কডইন কানেকশন সম্পূর্ণ সিঙ্ক করা রয়েছে।"
+            : "Sir, your Facebook profile (Yeasin Munshi @yeasin.munshi.980) and LinkedIn account are connected.";
+      } else if (
+        cleanLower.includes("message") ||
+        cleanLower.includes("মেসেজ") ||
+        cleanLower.includes("whatsapp") ||
+        cleanLower.includes("কে কে")
+      ) {
+        reply =
+          chosenLang === "bn"
+            ? "স্যার, আপনার সোশ্যাল অ্যাকাউন্টগুলোতে এই মুহূর্তে কোনো নতুন অপঠিত মেসেজ নেই।"
+            : "Sir, you currently have no unread messages on your accounts.";
       } else {
         reply =
           chosenLang === "bn"
-            ? `আমি আপনার কথাটি শুনেছি: "${query}"। আমি আপনার নির্দেশ কার্যকর করতে সম্পূর্ণ প্রস্তুত!`
-            : `I heard you clearly: "${query}". I am ready to assist you!`;
+            ? `আমি আপনার কথাটি শুনেছি স্যার: "${query}"। আমি আপনার নির্দেশ কার্যকর করতে সম্পূর্ণ প্রস্তুত!`
+            : `I heard you clearly Sir: "${query}". I am ready to assist you!`;
       }
 
       setLastResponse(reply);

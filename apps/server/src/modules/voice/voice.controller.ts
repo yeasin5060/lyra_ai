@@ -27,7 +27,7 @@ export class VoiceController {
     });
   }
 
-  public processVoice(req: Request, res: Response): void {
+  public async processVoice(req: Request, res: Response): Promise<void> {
     const { text, language } = req.body as {
       text?: string;
       language?: "bn" | "en" | "auto";
@@ -41,11 +41,19 @@ export class VoiceController {
       return;
     }
 
-    const result = voiceService.processVoice(text, language);
-    res.json({
-      success: true,
-      data: result
-    });
+    try {
+      const result = await voiceService.processVoice(text, language);
+      res.json({
+        success: true,
+        data: result
+      });
+    } catch (error) {
+      console.error("Voice processing error:", error);
+      res.status(500).json({
+        success: false,
+        message: "Voice processing failed"
+      });
+    }
   }
 }
 

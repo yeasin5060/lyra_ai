@@ -10,8 +10,10 @@ import {
   Sparkles,
   Volume2,
   VolumeX,
-  Layers,
-  LayoutGrid
+  Newspaper,
+  Share2,
+  ShieldCheck,
+  Globe
 } from "lucide-react";
 import QuantumNeuralOrb from "./quantum-neural-orb";
 import SatelliteConstellation from "./satellite-constellation";
@@ -19,6 +21,8 @@ import HudDigitalClock from "./hud-digital-clock";
 import LeftCoreHud from "./left-core-hud";
 import RightStreamHud from "./right-stream-hud";
 import BottomSubtitleDock from "./bottom-subtitle-dock";
+import LiveNewsReaderModal, { type NewsItem } from "./live-news-reader-modal";
+import SocialAccountsModal from "./social-accounts-modal";
 import { cyberAudio } from "./cyber-audio-engine";
 
 interface Props {
@@ -54,6 +58,28 @@ export default function JarvisCockpit({
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
+  // Modals
+  const [isNewsModalOpen, setIsNewsModalOpen] = useState(false);
+  const [isSocialModalOpen, setIsSocialModalOpen] = useState(false);
+  const [newsArticles, setNewsArticles] = useState<NewsItem[]>([
+    {
+      id: "prothomalo-1",
+      title: "বাংলাদেশ টেক ও এআই সেক্টরে তরুণ ডেভেলপারদের উদ্ভাবনী উদ্যোগ বৃদ্ধি",
+      snippet: "আন্তর্জাতিক বাজারে বাংলাদেশি এআই সফটওয়্যার ও অটোমেশন সলিউশনের গ্রহণযোগ্যতা বাড়ছে। তরুণ উদ্যোক্তারা নতুন স্টার্টআপ গড়ে তুলছেন।",
+      source: "Prothom Alo / প্রথম আলো",
+      sourceUrl: "https://www.prothomalo.com",
+      publishedAt: "আজকের তাজা খবর"
+    },
+    {
+      id: "tech-2",
+      title: "গ্লোবাল এআই ও ক্লাউড অটোমেশনে ওপেন সোর্স প্রযুক্তির নতুন বিপ্লব",
+      snippet: "নেক্সট-জেন লার্জ ল্যাঙ্গুয়েজ মডেল ও ভয়েস অ্যাসিস্ট্যান্ট প্ল্যাটফর্মগুলো দৈনন্দিন কর্মজীবনকে আরও দ্রুত এবং স্বয়ংক্রিয় করে তুলছে।",
+      source: "Tech News BD",
+      sourceUrl: "https://www.thedailystar.net",
+      publishedAt: "আজকের প্রধান খবর"
+    }
+  ]);
+
   const toggleFullscreen = () => {
     cyberAudio.playNodeClick();
     if (!document.fullscreenElement) {
@@ -73,6 +99,31 @@ export default function JarvisCockpit({
   const handleOrbClick = () => {
     cyberAudio.playWakeChime();
     onMicClick?.();
+  };
+
+  const fetchLiveNews = async () => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const res = await fetch(`${apiUrl}/api/world/news?lang=bn`);
+      if (res.ok) {
+        const json = await res.json();
+        if (json.data?.articles) {
+          setNewsArticles(json.data.articles);
+        }
+      }
+    } catch {
+      // Fallback already in state
+    }
+    setIsNewsModalOpen(true);
+  };
+
+  const handleSelectNode = (prompt: string) => {
+    if (prompt.includes("ওয়েব ব্রাউজার") || prompt.includes("সার্চ")) {
+      void fetchLiveNews();
+    } else if (prompt.includes("সোশ্যাল")) {
+      setIsSocialModalOpen(true);
+    }
+    onSubmitQuery?.(prompt);
   };
 
   return (
@@ -114,10 +165,10 @@ export default function JarvisCockpit({
                 LYRA AI
               </h1>
               <span className="rounded bg-emerald-500/20 px-1.5 py-0.2 text-[9px] font-bold text-emerald-300 border border-emerald-500/30">
-                M3 LIVE
+                YEASIN MUNSHI CORE
               </span>
             </div>
-            <p className="text-[10px] text-gray-400 font-mono">AUTONOMOUS PERSONAL INTELLIGENCE</p>
+            <p className="text-[10px] text-gray-400 font-mono">WORLD & SOCIAL INTELLIGENCE</p>
           </div>
         </div>
 
@@ -126,8 +177,34 @@ export default function JarvisCockpit({
           <HudDigitalClock assistantName="LYRA" isSleeping={isSleeping} />
         </div>
 
-        {/* Right HUD Controls: Theme, Sound, Fullscreen, Standby */}
+        {/* Right HUD Controls: Theme, Sound, Fullscreen, Standby, News & Social */}
         <div className="flex items-center gap-2">
+          {/* Live News Trigger */}
+          <button
+            onClick={() => {
+              cyberAudio.playNodeClick();
+              void fetchLiveNews();
+            }}
+            className="flex items-center gap-1.5 rounded-xl border border-cyan-500/30 bg-cyan-500/15 px-3 py-1.5 text-xs font-semibold text-cyan-200 transition hover:bg-cyan-500/30 shadow-sm"
+            title="Open Live News & World Feed"
+          >
+            <Newspaper size={13} />
+            <span className="hidden sm:inline">লাইভ নিউজ</span>
+          </button>
+
+          {/* Yeasin Munshi Social Accounts Vault */}
+          <button
+            onClick={() => {
+              cyberAudio.playNodeClick();
+              setIsSocialModalOpen(true);
+            }}
+            className="flex items-center gap-1.5 rounded-xl border border-violet-500/30 bg-violet-500/15 px-3 py-1.5 text-xs font-semibold text-violet-200 transition hover:bg-violet-500/30 shadow-sm"
+            title="Yeasin Munshi Social Accounts"
+          >
+            <Share2 size={13} />
+            <span className="hidden sm:inline">সোশ্যাল ভল্ট</span>
+          </button>
+
           {/* Theme Palette Switcher */}
           <div className="flex items-center gap-1 rounded-xl bg-white/5 p-1 border border-white/10">
             <button
@@ -168,7 +245,7 @@ export default function JarvisCockpit({
             {soundEnabled ? <Volume2 size={14} className="text-emerald-400" /> : <VolumeX size={14} />}
           </button>
 
-          {/* Fullscreen Toggle (Exact Video match) */}
+          {/* Fullscreen Toggle */}
           <button
             onClick={toggleFullscreen}
             className="flex h-8 w-8 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-gray-300 transition hover:bg-white/10"
@@ -184,7 +261,7 @@ export default function JarvisCockpit({
                 cyberAudio.playNodeClick();
                 onReturnToBoot();
               }}
-              className="flex items-center gap-1.5 rounded-xl border border-cyan-500/30 bg-cyan-500/15 px-3 py-1.5 text-xs font-semibold text-cyan-200 transition hover:bg-cyan-500/30"
+              className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-2.5 py-1.5 text-xs font-semibold text-gray-300 transition hover:bg-white/10"
               title="Return to Standby Screen"
             >
               <Radio size={13} />
@@ -218,9 +295,7 @@ export default function JarvisCockpit({
           {/* Satellite Constellation with 8 Orbiting Nodes & Laser Circuit Connectors */}
           <SatelliteConstellation
             orbitRadius={190}
-            onSelectNode={(prompt) => {
-              onSubmitQuery?.(prompt);
-            }}
+            onSelectNode={handleSelectNode}
             themeColor={themeColor}
           />
 
@@ -252,6 +327,20 @@ export default function JarvisCockpit({
           isSleeping={isSleeping}
         />
       </footer>
+
+      {/* Modals for Live News and Social Accounts */}
+      <LiveNewsReaderModal
+        isOpen={isNewsModalOpen}
+        onClose={() => setIsNewsModalOpen(false)}
+        articles={newsArticles}
+        onReadAloud={(text) => onSubmitQuery?.(text)}
+      />
+
+      <SocialAccountsModal
+        isOpen={isSocialModalOpen}
+        onClose={() => setIsSocialModalOpen(false)}
+        onAskAccount={(q) => onSubmitQuery?.(q)}
+      />
     </div>
   );
 }

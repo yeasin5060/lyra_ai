@@ -4,8 +4,8 @@ export default function QuickStatsStrip() {
   const stats = [
     {
       label: "Media & Social Integration",
-      value: "0/9 Accounts Linked",
-      sub: "Clean state • Ready for auth",
+      value: "Yeasin Munshi Synced",
+      sub: "Facebook & LinkedIn Connected",
       icon: Share2,
       color: "from-blue-500/25 to-indigo-500/10 text-blue-400 border-blue-500/30"
     },

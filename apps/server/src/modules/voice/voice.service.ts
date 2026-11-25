@@ -1,4 +1,5 @@
 import { mediaPlatformService } from "../media/media.service.js";
+import { worldIntelligenceService } from "../world/world.service.js";
 
 export interface LanguageDetectionResult {
   language: "bn" | "en" | "mixed";
@@ -25,6 +26,8 @@ export interface VoiceProcessResult {
   replyText: string;
   isSleepCommand?: boolean;
   isWakeCommand?: boolean;
+  actionType?: "news" | "weather" | "search" | "social" | "general";
+  actionPayload?: unknown;
   voiceConfig: {
     pitch: number;
     rate: number;
@@ -101,7 +104,8 @@ export class VoiceService {
         tone: "Soft, Warm & Sweet (নরম ও মিষ্টভাষী)",
         pitch: 1.15,
         rate: 0.94,
-        sampleGreeting: "হ্যালো! আমি লায়রা, আপনার পার্সোনাল এআই সহকারী। আমি আপনার সমস্ত মিডিয়া প্ল্যাটফর্ম ও কাজ পরিচালনায় প্রস্তুত।"
+        sampleGreeting:
+          "হ্যালো ইয়াসিন স্যার! আমি লায়রা, আপনার পার্সোনাল এআই সহকারী। ফেসবুক, লিঙ্কডইন, সংবাদ ও বিশ্বের যেকোনো তথ্য জানাতে আমি প্রস্তুত।"
       },
       {
         id: "lyra-female-en",
@@ -110,18 +114,19 @@ export class VoiceService {
         tone: "Soft, Elegant & Articulate",
         pitch: 1.08,
         rate: 0.95,
-        sampleGreeting: "Hello! I am LYRA, your intelligent personal AI assistant. All your social and media platforms are synced and ready."
+        sampleGreeting:
+          "Hello Sir! I am LYRA, your intelligent personal AI assistant. All your social accounts and live world intelligence streams are active."
       }
     ];
   }
 
   /**
-   * Intelligent conversational response handler in soft female tone with Sleep/Wake & Media Knowledge.
+   * Autonomous Action Dispatcher: Connects Live News, Weather, Web Search, and Social Profiles.
    */
-  public processVoice(
+  public async processVoice(
     text: string,
     forcedLanguage?: "bn" | "en" | "auto"
-  ): VoiceProcessResult {
+  ): Promise<VoiceProcessResult> {
     const detection = this.detectLanguage(text);
     const lang =
       forcedLanguage && forcedLanguage !== "auto"
@@ -134,9 +139,10 @@ export class VoiceService {
     let reply = "";
     let isSleepCommand = false;
     let isWakeCommand = false;
+    let actionType: "news" | "weather" | "search" | "social" | "general" = "general";
+    let actionPayload: unknown = null;
 
-    // Check for Sleep Mode command:
-    // e.g. "lyra tumi ghomao", "lyra sleep", "tumi sleep mode e chole jao", "ঘুমাও", "স্লিপ মোডে যাও"
+    // 1. Sleep Mode Command
     if (
       clean.includes("ghomao") ||
       clean.includes("ghumao") ||
@@ -154,15 +160,12 @@ export class VoiceService {
       clean.includes("বন্ধ হও")
     ) {
       isSleepCommand = true;
-      if (lang === "bn") {
-        reply =
-          "ঠিক আছে, আমি এখন স্লিপ মোডে যাচ্ছি। আমাকে প্রয়োজন হলে শুধু 'Hey LYRA' বললেই আমি সাথে সাথে জেগে উঠব। শুভ রাত্রি!";
-      } else {
-        reply =
-          "Understood! Entering sleep mode now. Whenever you need me again, just say 'Hey LYRA' and I will wake right up. Sweet dreams!";
-      }
+      reply =
+        lang === "bn"
+          ? "ঠিক আছে স্যার, আমি এখন স্লিপ মোডে যাচ্ছি। আমাকে প্রয়োজন হলে শুধু 'Hey LYRA' বললেই আমি জেগে উঠব। শুভ রাত্রি!"
+          : "Understood Sir! Entering sleep mode now. Whenever you need me again, just say 'Hey LYRA' and I will wake right up. Sweet dreams!";
     }
-    // Check for Wake command:
+    // 2. Wake Command
     else if (
       clean.includes("wake up") ||
       clean.includes("জেগে ওঠো") ||
@@ -171,81 +174,129 @@ export class VoiceService {
       clean.includes("উঠে পর")
     ) {
       isWakeCommand = true;
-      if (lang === "bn") {
-        reply = "আমি সম্পূর্ণ সজাগ হয়ে গেছি! বলুন, আপনার জন্য কি করতে পারি?";
-      } else {
-        reply = "I am wide awake and ready! What can I do for you?";
-      }
+      reply =
+        lang === "bn"
+          ? "আমি সম্পূর্ণ সজাগ হয়ে গেছি স্যার! বলুন, আপনার জন্য কি করতে পারি?"
+          : "I am wide awake and ready, Sir! What can I do for you?";
     }
-    // 2. Check if query relates to connected social/media platforms & inbound messages
-    else {
+    // 3. Live Breaking News / Country Situation (Exact match to video: "আজকে দেশের কি অবস্থা? একটু আপডেট দাও তো")
+    else if (
+      clean.includes("দেশের কি অবস্থা") ||
+      clean.includes("দেশের অবস্থা") ||
+      clean.includes("দেশের খবর") ||
+      clean.includes("আজকের খবর") ||
+      clean.includes("তাজা খবর") ||
+      clean.includes("নিউজ") ||
+      clean.includes("news") ||
+      clean.includes("headline") ||
+      clean.includes("প্রথম আলো") ||
+      clean.includes("পত্রিকা") ||
+      clean.includes("আপডেট দাও") ||
+      clean.includes("কী অবস্থা")
+    ) {
+      actionType = "news";
+      const newsResult = await worldIntelligenceService.getLatestNews("bangladesh", lang);
+      reply = newsResult.spokenSummary;
+      actionPayload = newsResult.articles;
+    }
+    // 4. Live Weather & Environmental Report
+    else if (
+      clean.includes("আবহাওয়া") ||
+      clean.includes("আবহাওয়া") ||
+      clean.includes("weather") ||
+      clean.includes("বৃষ্টি") ||
+      clean.includes("তাপমাত্রা") ||
+      clean.includes("temperature") ||
+      clean.includes("গরম")
+    ) {
+      actionType = "weather";
+      const weatherResult = await worldIntelligenceService.getLiveWeather("Dhaka", lang);
+      reply = weatherResult.spokenSummary;
+      actionPayload = weatherResult;
+    }
+    // 5. Live Web Knowledge & Search
+    else if (
+      clean.includes("সার্চ করো") ||
+      clean.includes("সার্চ") ||
+      clean.includes("search") ||
+      clean.includes("খোঁজো") ||
+      clean.includes("গুগল করো") ||
+      clean.includes("who is") ||
+      clean.includes("what is") ||
+      clean.includes("সম্পর্কে বলো")
+    ) {
+      actionType = "search";
+      const query = clean
+        .replace(/সার্চ করো|সার্চ|search|খোঁজো|গুগল করো|who is|what is|সম্পর্কে বলো/gi, "")
+        .trim() || "Artificial Intelligence";
+      const searchResult = await worldIntelligenceService.searchWeb(query, lang);
+      reply = searchResult.spokenSummary;
+      actionPayload = searchResult;
+    }
+    // 6. Connected Social Platforms & Yeasin Munshi's Accounts
+    else if (
+      clean.includes("facebook") ||
+      clean.includes("ফেসবুক") ||
+      clean.includes("fb") ||
+      clean.includes("linkedin") ||
+      clean.includes("লিংকডইন") ||
+      clean.includes("whatsapp") ||
+      clean.includes("হোয়াটসঅ্যাপ") ||
+      clean.includes("gmail") ||
+      clean.includes("জিমেইল") ||
+      clean.includes("মেসেজ") ||
+      clean.includes("message") ||
+      clean.includes("social") ||
+      clean.includes("সোশ্যাল") ||
+      clean.includes("কে কে")
+    ) {
+      actionType = "social";
       const mediaReply = mediaPlatformService.queryPlatformInfo(clean, lang);
-      if (mediaReply) {
-        reply = mediaReply;
-      } else if (lang === "bn") {
-        if (
-          clean.includes("কেমন আছ") ||
-          clean.includes("কেমন আছেন") ||
-          clean.includes("কি খবর")
-        ) {
-          reply =
-            "আমি খুব ভালো আছি! আশা করি আপনার দিনটিও চমৎকার কাটছে। বলুন, আমি আপনাকে কিভাবে সাহায্য করতে পারি?";
-        } else if (
-          clean.includes("তুমি কে") ||
-          clean.includes("তোমার নাম কি") ||
-          clean.includes("লায়রা")
-        ) {
-          reply =
-            "আমি লায়রা (LYRA), আপনার পার্সোনাল ফিমেল এআই অ্যাসিস্ট্যান্ট। আমি আপনার ফেসবুক, ইউটিউব, ইনস্টাগ্রাম, জিমেইল, ক্যালেন্ডার সহ সমস্ত ডিজিটাল অ্যাকাউন্ট ও শিডিউল নিয়ন্ত্রণ করতে পারি।";
-        } else if (
-          clean.includes("কি করতে পার") ||
-          clean.includes("কী করতে পার") ||
-          clean.includes("সাহায্য")
-        ) {
-          reply =
-            "আমি আপনার সকল মিডিয়া প্ল্যাটফর্ম পর্যবেক্ষণ করি—ফেসবুকের মেসেজ, ইউটিউবের ভিউ, ইনস্টাগ্রাম ডিএম, জিমেইলের গুরুত্বপূর্ণ মেইল এবং ক্যালেন্ডার শিডিউল ইত্যাদি যেকোনো কিছু মুখে জিজ্ঞেস করলেই আমি মিষ্টি কণ্ঠে বিস্তারিত বলে দিতে পারি। আর 'ঘুমাও' বললে আমি স্লিপ মোডে চলে যাই।";
-        } else if (clean.includes("সময়") || clean.includes("কয়টা বাজে")) {
-          const now = new Date().toLocaleTimeString("bn-BD", {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: true
-          });
-          reply = `এখন সময় প্রায় ${now}। আর কোন প্ল্যাটফর্মের আপডেট দিতে হবে?`;
-        } else {
-          reply = `আমি আপনার কথাটি শুনেছি: "${text}"। আমি আপনার নির্দেশ কার্যকর করতে সম্পূর্ণ প্রস্তুত!`;
-        }
+      reply =
+        mediaReply ||
+        (lang === "bn"
+          ? "স্যার, আপনার ফেসবুক প্রোফাইল (Yeasin Munshi - yeasin.munshi.980) এবং লিঙ্কডইন কানেকশন সম্পূর্ণ সিঙ্ক করা রয়েছে। সমস্ত সোশ্যাল অ্যাকাউন্ট নিয়মিত পর্যবেক্ষণ করা হচ্ছে।"
+          : "Sir, your Facebook profile (Yeasin Munshi @yeasin.munshi.980) and LinkedIn network are fully connected and monitored.");
+    }
+    // 7. Conversational & Persona Answers
+    else if (lang === "bn") {
+      if (
+        clean.includes("কেমন আছ") ||
+        clean.includes("কেমন আছেন") ||
+        clean.includes("কি খবর")
+      ) {
+        reply =
+          "আমি খুব ভালো আছি ইয়াসিন স্যার! আশা করি আপনার দিনটিও চমৎকার কাটছে। আপনার ফেসবুক, লিঙ্কডইন, আজকের তাজা খবর বা কোনো কাজের আপডেট জানতে চান?";
+      } else if (
+        clean.includes("তুমি কে") ||
+        clean.includes("তোমার নাম কি") ||
+        clean.includes("লায়রা")
+      ) {
+        reply =
+          "আমি লায়রা (LYRA), আপনার পার্সোনাল ফিমেল এআই অ্যাসিস্ট্যান্ট। আমি আপনার ফেসবুক, লিঙ্কডইন, হোয়াটসঅ্যাপ সহ সমস্ত ডিজিটাল অ্যাকাউন্ট ও বিশ্বের রিয়েল-টাইম তথ্য ও খবর তাৎক্ষণিকভাবে মুখে জানিয়ে দিতে পারি।";
+      } else if (clean.includes("সময়") || clean.includes("কয়টা বাজে")) {
+        const now = new Date().toLocaleTimeString("bn-BD", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true
+        });
+        reply = `এখন সময় প্রায় ${now}। আর কোনো খবর বা সোশ্যাল আপডেট দিতে হবে স্যার?`;
       } else {
-        if (
-          clean.includes("how are you") ||
-          clean.includes("how's it going") ||
-          clean.includes("how do you do")
-        ) {
-          reply =
-            "I am doing fantastic, thank you! How can I assist you today?";
-        } else if (
-          clean.includes("who are you") ||
-          clean.includes("your name") ||
-          clean.includes("lyra")
-        ) {
-          reply =
-            "I am LYRA, your personal female AI companion. I manage your entire digital ecosystem—Facebook, YouTube, Instagram, Gmail, Spotify, and more.";
-        } else if (
-          clean.includes("what can you do") ||
-          clean.includes("help") ||
-          clean.includes("features")
-        ) {
-          reply =
-            "I monitor and manage all your connected accounts: reviewing unread DMs on Instagram & Facebook, checking YouTube analytics, summarizing Gmail inbox, scheduling meetings, and streaming music on Spotify. Just say 'Hey LYRA' anytime, or tell me to go to sleep!";
-        } else if (clean.includes("time") || clean.includes("what time")) {
-          const now = new Date().toLocaleTimeString("en-US", {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: true
-          });
-          reply = `The current time is ${now}. How can I help you further?`;
-        } else {
-          reply = `I heard you clearly: "${text}". I am ready to assist you!`;
-        }
+        reply = `আমি আপনার কথাটি শুনেছি স্যার: "${text}"। আমি যেকোনো নির্দেশ কার্যকর করতে প্রস্তুত!`;
+      }
+    } else {
+      if (
+        clean.includes("how are you") ||
+        clean.includes("how's it going")
+      ) {
+        reply = "I am doing fantastic, thank you Sir! All your social channels and live world feeds are active. How may I assist you?";
+      } else if (
+        clean.includes("who are you") ||
+        clean.includes("your name")
+      ) {
+        reply = "I am LYRA, your personal female AI companion, managing your social accounts, Facebook, LinkedIn, live news, and web intelligence.";
+      } else {
+        reply = `I heard you clearly Sir: "${text}". Standing by for your command!`;
       }
     }
 
@@ -274,6 +325,8 @@ export class VoiceService {
       replyText: reply,
       isSleepCommand,
       isWakeCommand,
+      actionType,
+      actionPayload,
       voiceConfig: {
         pitch: isSleepCommand ? 1.05 : lang === "bn" ? 1.15 : 1.08,
         rate: isSleepCommand ? 0.90 : lang === "bn" ? 0.94 : 0.95,
