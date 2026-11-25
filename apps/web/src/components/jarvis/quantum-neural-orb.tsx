@@ -10,6 +10,30 @@ interface Props {
   onClick?: () => void;
 }
 
+const COLOR_PROFILES = {
+  emerald: {
+    primary: "rgb(16, 185, 129)",
+    secondary: "rgb(52, 211, 153)",
+    glow: "rgba(16, 185, 129, 0.4)",
+    core: "rgba(6, 78, 59, 0.8)",
+    pulse: "#10b981"
+  },
+  cyan: {
+    primary: "rgb(6, 182, 212)",
+    secondary: "rgb(103, 232, 249)",
+    glow: "rgba(6, 182, 212, 0.4)",
+    core: "rgba(22, 78, 99, 0.8)",
+    pulse: "#06b6d4"
+  },
+  violet: {
+    primary: "rgb(139, 92, 246)",
+    secondary: "rgb(192, 132, 252)",
+    glow: "rgba(139, 92, 246, 0.4)",
+    core: "rgba(76, 29, 149, 0.8)",
+    pulse: "#8b5cf6"
+  }
+};
+
 export default function QuantumNeuralOrb({
   state = "idle",
   size = 280,
@@ -23,30 +47,7 @@ export default function QuantumNeuralOrb({
   const isSleeping = state === "sleeping";
   const isProcessing = state === "processing";
 
-  // Color profiles
-  const colors = {
-    emerald: {
-      primary: "rgb(16, 185, 129)",
-      secondary: "rgb(52, 211, 153)",
-      glow: "rgba(16, 185, 129, 0.4)",
-      core: "rgba(6, 78, 59, 0.8)",
-      pulse: "#10b981"
-    },
-    cyan: {
-      primary: "rgb(6, 182, 212)",
-      secondary: "rgb(103, 232, 249)",
-      glow: "rgba(6, 182, 212, 0.4)",
-      core: "rgba(22, 78, 99, 0.8)",
-      pulse: "#06b6d4"
-    },
-    violet: {
-      primary: "rgb(139, 92, 246)",
-      secondary: "rgb(192, 132, 252)",
-      glow: "rgba(139, 92, 246, 0.4)",
-      core: "rgba(76, 29, 149, 0.8)",
-      pulse: "#8b5cf6"
-    }
-  }[isSleeping ? "cyan" : themeColor];
+  const colors = COLOR_PROFILES[isSleeping ? "cyan" : themeColor];
 
   useEffect(() => {
     const canvas = canvasRef.current;

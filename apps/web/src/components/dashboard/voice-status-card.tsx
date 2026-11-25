@@ -1,3 +1,5 @@
+"use client";
+
 import { CheckCircle2, Mic, Radio, Volume2, Waves } from "lucide-react";
 
 export default function VoiceStatusCard() {

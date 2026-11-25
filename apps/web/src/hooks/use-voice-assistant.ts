@@ -382,9 +382,13 @@ export function useVoiceAssistant() {
     );
   }, [preferredLang, processQuery]);
 
-  // Initialize auto voice on load
+  // Initialize auto voice once on load
+  const isMountedRef = useRef(false);
   useEffect(() => {
-    void enableAutoVoice();
+    if (!isMountedRef.current) {
+      isMountedRef.current = true;
+      void enableAutoVoice();
+    }
 
     return () => {
       speechRecognizer.stop();

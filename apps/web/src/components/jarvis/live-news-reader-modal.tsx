@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ExternalLink, Globe, Newspaper, Volume2, X, Sparkles, Languages } from "lucide-react";
+import { ExternalLink, Globe, Newspaper, Volume2, X, Sparkles } from "lucide-react";
 import { cyberAudio } from "./cyber-audio-engine";
 
 export interface NewsItem {

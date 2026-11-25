@@ -1,3 +1,5 @@
+"use client";
+
 import { Calendar, Facebook, Globe, Instagram, Mail, Shield, Youtube } from "lucide-react";
 
 const integrations = [

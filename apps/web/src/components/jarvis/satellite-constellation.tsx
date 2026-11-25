@@ -148,11 +148,17 @@ export default function SatelliteConstellation({
       ? "rgba(6, 182, 212, 0.5)"
       : "rgba(139, 92, 246, 0.5)";
 
+  const svgSize = orbitRadius * 2 + 160;
+  const center = svgSize / 2;
+
   return (
     <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
       {/* SVG Circuit Lines connecting center to each satellite node */}
       <svg
-        className="absolute inset-0 w-full h-full pointer-events-none overflow-visible"
+        width={svgSize}
+        height={svgSize}
+        viewBox={`0 0 ${svgSize} ${svgSize}`}
+        className="absolute pointer-events-none overflow-visible"
         style={{ zIndex: 5 }}
       >
         <defs>
@@ -173,18 +179,20 @@ export default function SatelliteConstellation({
 
         {NODES_DATA.map((node) => {
           const rad = (node.angleDeg * Math.PI) / 180;
-          // Calculate center and target points based on 50% coordinate
-          // In SVG percentage space: cx = 50%, cy = 50%
+          const targetX = center + Math.cos(rad) * orbitRadius;
+          const targetY = center + Math.sin(rad) * orbitRadius;
+          const startX = center + Math.cos(rad) * 60;
+          const startY = center + Math.sin(rad) * 60;
           const isHovered = hoveredNode?.id === node.id;
 
           return (
             <g key={`circuit-${node.id}`}>
               {/* Pulsing Base Laser Circuit Path */}
               <motion.line
-                x1="50%"
-                y1="50%"
-                x2={`calc(50% + ${Math.cos(rad) * orbitRadius}px)`}
-                y2={`calc(50% + ${Math.sin(rad) * orbitRadius}px)`}
+                x1={center}
+                y1={center}
+                x2={targetX}
+                y2={targetY}
                 stroke={isHovered ? node.color : primaryGlow}
                 strokeWidth={isHovered ? 2 : 1.2}
                 strokeDasharray="4 4"
@@ -201,17 +209,20 @@ export default function SatelliteConstellation({
               />
 
               {/* Traveling Energy Packet Dot on Circuit Line */}
-              <circle
+              <motion.circle
                 r={isHovered ? 3.5 : 2}
                 fill={isHovered ? "#ffffff" : node.color}
                 filter="url(#glowFilter)"
-              >
-                <animateMotion
-                  path={`M calc(50% + ${Math.cos(rad) * 60}px) calc(50% + ${Math.sin(rad) * 60}px) L calc(50% + ${Math.cos(rad) * orbitRadius}px) calc(50% + ${Math.sin(rad) * orbitRadius}px)`}
-                  dur={isHovered ? "1.2s" : "2.4s"}
-                  repeatCount="indefinite"
-                />
-              </circle>
+                animate={{
+                  cx: [startX, targetX],
+                  cy: [startY, targetY]
+                }}
+                transition={{
+                  duration: isHovered ? 1.0 : 2.2,
+                  repeat: Infinity,
+                  ease: "linear"
+                }}
+              />
             </g>
           );
         })}

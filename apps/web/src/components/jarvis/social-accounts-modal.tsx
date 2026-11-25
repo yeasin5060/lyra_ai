@@ -14,11 +14,9 @@ import {
   Youtube,
   Instagram,
   X,
-  Sparkles,
   CheckCircle2,
   Volume2,
-  Clock,
-  UserCheck
+  Clock
 } from "lucide-react";
 import { cyberAudio } from "./cyber-audio-engine";
 
@@ -296,7 +294,7 @@ export default function SocialAccountsModal({
                             color: msg.color
                           }}
                         >
-                          <Icon size={14} />
+                          {Icon ? <Icon size={14} /> : null}
                         </div>
                         <div>
                           <span className="text-xs font-bold text-white group-hover:text-violet-200 transition">
@@ -358,7 +356,7 @@ export default function SocialAccountsModal({
                             color: acc.color
                           }}
                         >
-                          <Icon size={16} />
+                          {Icon ? <Icon size={16} /> : null}
                         </div>
                         <span className="flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[9px] font-bold text-emerald-300 border border-emerald-500/30">
                           <CheckCircle2 size={10} />

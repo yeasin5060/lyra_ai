@@ -1,3 +1,5 @@
+"use client";
+
 import { Cpu, HeartHandshake, Mic2, Radio, Share2, Sparkles } from "lucide-react";
 
 export default function QuickStatsStrip() {
