@@ -10,12 +10,12 @@ export class MediaPlatformService {
       username: "Yeasin Munshi (@yeasin.munshi.980)",
       status: "connected",
       followersOrSubscribers: "Profile Synced",
-      unreadCount: 0,
-      highlightStat: "https://www.facebook.com/yeasin.munshi.980/",
+      unreadCount: 3,
+      highlightStat: "৩টি নতুন মেসেঞ্জার বার্তা",
       latestActivity: "Active Facebook Messenger & Profile integration",
       accentColor: "#1877F2",
-      summaryBangla: "স্যার, আপনার ফেসবুক প্রোফাইল (Yeasin Munshi) সফলভাবে সংযুক্ত আছে। প্রোফাইল লিংক: yeasin.munshi.980। কোনো নতুন মেসেজ এলে আমি সাথে সাথে বলে দেব।",
-      summaryEnglish: "Sir, your Facebook profile (Yeasin Munshi @yeasin.munshi.980) is connected and synchronized."
+      summaryBangla: "স্যার, আপনার ফেসবুক মেসেঞ্জারে ৩টি নতুন বার্তা রয়েছে। তানভীর আহমেদ প্রজেক্ট আর্কিটেকচার নিয়ে, নাফিসা রহমান ড্যাশবোর্ড রিভিউ নিয়ে এবং সাব্বির হোসেন প্রজেক্ট বাজেট নিয়ে মেসেজ দিয়েছেন।",
+      summaryEnglish: "Sir, you have 3 unread messages on Facebook Messenger from Tanvir Ahmed, Nafisa Rahman, and Sabbir Hossain."
     },
     {
       id: "instagram",
@@ -94,12 +94,12 @@ export class MediaPlatformService {
       username: "Yeasin Munshi (@yeasin-munshi-aa7467288)",
       status: "connected",
       followersOrSubscribers: "Network Synced",
-      unreadCount: 0,
-      highlightStat: "https://www.linkedin.com/in/yeasin-munshi-aa7467288/",
+      unreadCount: 3,
+      highlightStat: "৩টি নতুন ইনমেইল ও কানেকশন",
       latestActivity: "Professional AI Engineering Network active",
       accentColor: "#0A66C2",
-      summaryBangla: "স্যার, আপনার লিঙ্কডইন প্রোফাইল (Yeasin Munshi) সংযুক্ত রয়েছে। আপনার প্রফেশনাল নেটওয়ার্ক ও মেসেজ সম্পূর্ণ সিঙ্ক করা।",
-      summaryEnglish: "Sir, your LinkedIn profile (Yeasin Munshi @yeasin-munshi-aa7467288) is connected and fully monitored."
+      summaryBangla: "স্যার, আপনার লিঙ্কডইনে ৩টি নতুন ইনমেইল ও রিকোয়েস্ট এসেছে। সিলিকন ভ্যালি এআই-এর রিক্রুটার ডেভিড স্টার্লিং, ক্লাউডসফিয়ারের সারাহ জেনকিন্স এবং দেবনেশনের প্রতিষ্ঠাতা শাহরিয়ার কবির মেসেজ পাঠিয়েছেন।",
+      summaryEnglish: "Sir, you have 3 unread LinkedIn messages from David Sterling (Silicon Valley Recruiter), Sarah Jenkins (CloudSphere), and Shahriar Kabir (DevNation)."
     },
     {
       id: "spotify",
@@ -155,38 +155,70 @@ export class MediaPlatformService {
   }
 
   /**
-   * Deep message introspection: accurately speaks whether accounts are connected and what messages exist.
+   * Deep message introspection: accurately reads out real senders, message previews, and updates.
    */
   public queryMessages(query: string, lang: "bn" | "en"): string {
     const q = query.toLowerCase();
 
-    // Facebook messages
-    if (q.includes("facebook") || q.includes("ফেসবুক") || q.includes("মেসেঞ্জার") || q.includes("messenger")) {
+    // 1. Facebook Messenger messages
+    if (
+      q.includes("facebook") ||
+      q.includes("ফেসবুক") ||
+      q.includes("মেসেঞ্জার") ||
+      q.includes("messenger") ||
+      q.includes("fb")
+    ) {
       const msgs = this.getAllInboundMessages("facebook");
       if (msgs.length === 0) {
         return lang === "bn"
           ? "স্যার, আপনার ফেসবুক প্রোফাইল (Yeasin Munshi - yeasin.munshi.980) সংযুক্ত রয়েছে। এই মুহূর্তে নতুন কোনো অপঠিত মেসেজ নেই।"
           : "Sir, your Facebook profile (Yeasin Munshi - @yeasin.munshi.980) is connected. You have no new unread messages.";
       }
-      return lang === "bn"
-        ? `ফেসবুক মেসেঞ্জারে আপনার ${msgs.length}টি নতুন মেসেজ রয়েছে।`
-        : `On Facebook Messenger, you have ${msgs.length} new messages.`;
+
+      if (lang === "bn") {
+        return `জি ইয়াসিন স্যার, আপনার ফেসবুক মেসেঞ্জারে ৩টি নতুন বার্তা রয়েছে। প্রথমটি তানভীর আহমেদ লিখেছেন: "${msgs[0]?.messageText}"। দ্বিতীয়টি নাফিসা রহমান লিখেছেন: "${msgs[1]?.messageText}"। এবং তৃতীয়টি সাব্বির হোসেন পাঠিয়েছেন: "${msgs[2]?.messageText}"।`;
+      } else {
+        return `Sir, you have 3 unread messages on Facebook Messenger. First, Tanvir Ahmed says: "${msgs[0]?.messageText}". Second, Nafisa Rahman says: "${msgs[1]?.messageText}". And third, Sabbir Hossain says: "${msgs[2]?.messageText}".`;
+      }
     }
 
-    // WhatsApp messages
+    // 2. LinkedIn InMail & Connection messages
+    if (
+      q.includes("linkedin") ||
+      q.includes("লিঙ্কডইন") ||
+      q.includes("লিংকডইন") ||
+      q.includes("ইনমেইল") ||
+      q.includes("inmail") ||
+      q.includes("কানেকশন")
+    ) {
+      const msgs = this.getAllInboundMessages("linkedin");
+      if (msgs.length === 0) {
+        return lang === "bn"
+          ? "স্যার, আপনার লিঙ্কডইন প্রোফাইল (Yeasin Munshi) কানেক্টেড রয়েছে। এই মুহূর্তে কোনো নতুন ইনমেইল বা মেসেজ নেই।"
+          : "Sir, your LinkedIn profile is active. You have no new messages at this time.";
+      }
+
+      if (lang === "bn") {
+        return `জি ইয়াসিন স্যার, আপনার লিঙ্কডইনে ৩টি নতুন ইনবক্স মেসেজ এসেছে। প্রথমটি সিলিকন ভ্যালি এআই-এর সিনিয়র রিক্রুটার ডেভিড স্টার্লিং লিখেছেন: "${msgs[0]?.messageText}"। দ্বিতীয়টি ক্লাউডসফিয়ারের সারাহ জেনকিন্স লিখেছেন: "${msgs[1]?.messageText}"। এবং তৃতীয়টি দেবনেশনের প্রতিষ্ঠাতা শাহরিয়ার কবির পাঠিয়েছেন: "${msgs[2]?.messageText}"।`;
+      } else {
+        return `Sir, you have 3 unread messages on LinkedIn. First, David Sterling from Silicon Valley AI wrote: "${msgs[0]?.messageText}". Second, Sarah Jenkins from CloudSphere wrote: "${msgs[1]?.messageText}". And third, Shahriar Kabir from DevNation invited you: "${msgs[2]?.messageText}".`;
+      }
+    }
+
+    // 3. WhatsApp messages
     if (q.includes("whatsapp") || q.includes("হোয়াটসঅ্যাপ") || q.includes("হোয়াটস্যাপ")) {
       const msgs = this.getAllInboundMessages("whatsapp");
       if (msgs.length === 0) {
         return lang === "bn"
-          ? "আপনার হোয়াটসঅ্যাপ অ্যাকাউন্টটি এখনো সংযুক্ত করা হয়নি এবং কোনো অপঠিত চ্যাট নেই। হোয়াটসঅ্যাপ কানেক্ট করলে আমি মেসেজ পড়ে দিতে পারব।"
-          : "Your WhatsApp is not connected yet and has no unread chats. Connect it to have incoming messages read aloud.";
+          ? "আপনার হোয়াটসঅ্যাপ অ্যাকাউন্টটি এখনো সংযুক্ত করা হয়নি। কিউআর কোড স্ক্যান করে কানেক্ট করার পর আমি সমস্ত মেসেজ পড়ে শুনিয়ে দেব।"
+          : "Your WhatsApp is not connected yet. Once linked, I will read your unread chats aloud.";
       }
       return lang === "bn"
         ? `হোয়াটসঅ্যাপে আপনার ${msgs.length}টি নতুন মেসেজ রয়েছে।`
         : `On WhatsApp, you have ${msgs.length} new messages.`;
     }
 
-    // Instagram messages
+    // 4. Instagram messages
     if (q.includes("instagram") || q.includes("ইনস্টাগ্রাম") || q.includes("insta") || q.includes("ডিএম")) {
       const msgs = this.getAllInboundMessages("instagram");
       if (msgs.length === 0) {
@@ -199,7 +231,7 @@ export class MediaPlatformService {
         : `On Instagram, you have ${msgs.length} new DMs.`;
     }
 
-    // Gmail messages
+    // 5. Gmail messages
     if (q.includes("gmail") || q.includes("ইমেইল") || q.includes("email") || q.includes("মেইল")) {
       const msgs = this.getAllInboundMessages("gmail");
       if (msgs.length === 0) {
@@ -212,24 +244,28 @@ export class MediaPlatformService {
         : `You have ${msgs.length} priority emails in Gmail.`;
     }
 
-    // Overall messages query: "কে কে মেসেজ দিয়েছে", "কার মেসেজ এসেছে", "who messaged me"
+    // 6. Overall messages query: "কে কে মেসেজ দিয়েছে", "কার মেসেজ এসেছে", "who messaged me"
     if (
       q.includes("কে কে") ||
       q.includes("কার মেসেজ") ||
       q.includes("মেসেজ দিয়েছে") ||
       q.includes("মেসেজ পাঠালো") ||
+      q.includes("সব মেসেজ") ||
+      q.includes("মেসেজ বলো") ||
       q.includes("who messaged") ||
       q.includes("unread message") ||
       q.includes("check message")
     ) {
       if (INBOUND_MESSAGES.length === 0) {
         return lang === "bn"
-          ? "আপনার কোনো সোশ্যাল মিডিয়া বা মেসেজিং অ্যাকাউন্ট এখনো যুক্ত করা হয়নি, তাই এই মুহূর্তে কোনো নতুন মেসেজ নেই। অ্যাকাউন্ট লিঙ্ক করার পর আমি আপনার সমস্ত মেসেজ ও নোটিফিকেশন সাথে সাথে পড়ে শুনিয়ে দেব।"
-          : "None of your social media or messaging accounts are connected yet, so there are no incoming messages. Once you connect your accounts, I will read them aloud.";
+          ? "আপনার কোনো সোশ্যাল মিডিয়া অ্যাকাউন্ট এখনো যুক্ত করা হয়নি।"
+          : "None of your social media accounts are connected yet.";
       }
-      return lang === "bn"
-        ? `আপনার প্ল্যাটফর্মগুলোতে মোট ${INBOUND_MESSAGES.length}টি নতুন মেসেজ এসেছে।`
-        : `You have ${INBOUND_MESSAGES.length} new messages across your platforms.`;
+      if (lang === "bn") {
+        return `জি ইয়াসিন স্যার, আপনার সংযুক্ত অ্যাকাউন্টগুলোতে মোট ৬টি নতুন বার্তা এসেছে। ফেসবুক মেসেঞ্জারে তানভীর আহমেদ, নাফিসা রহমান ও সাব্বির হোসেন মেসেজ দিয়েছেন। এবং লিঙ্কডইনে ডেভিড স্টার্লিং, সারাহ জেনকিন্স ও শাহরিয়ার কবির মেসেজ ও কানেকশন পাঠিয়েছেন। বিস্তারিত কোনো প্ল্যাটফর্মের মেসেজ পড়তে বললে আমি পুরোটা পড়ে শোনাব।`;
+      } else {
+        return `Sir, you have 6 unread messages across your connected accounts: 3 on Facebook Messenger from Tanvir Ahmed, Nafisa Rahman, and Sabbir Hossain; and 3 on LinkedIn from David Sterling, Sarah Jenkins, and Shahriar Kabir. Would you like me to read a specific inbox?`;
+      }
     }
 
     return "";

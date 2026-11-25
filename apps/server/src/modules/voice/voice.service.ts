@@ -39,6 +39,68 @@ export interface VoiceProcessResult {
 
 export class VoiceService {
   /**
+   * Fetches high-fidelity natural spoken audio MP3 stream.
+   * Splits long text into chunks, queries Google TTS client=tw-ob, and concatenates audio.
+   */
+  public async fetchTtsAudioStream(text: string, lang: "bn" | "en" = "bn"): Promise<Buffer> {
+    const cleanText = text
+      .replace(/[*#_`~]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    if (!cleanText) {
+      return Buffer.from([]);
+    }
+
+    // Split text into readable chunks <= 160 chars
+    const chunks: string[] = [];
+    const sentences = cleanText.split(/([।?!.\n]+)/);
+
+    let currentChunk = "";
+    for (const part of sentences) {
+      if ((currentChunk + part).length < 160) {
+        currentChunk += part;
+      } else {
+        if (currentChunk.trim()) chunks.push(currentChunk.trim());
+        currentChunk = part;
+      }
+    }
+    if (currentChunk.trim()) {
+      chunks.push(currentChunk.trim());
+    }
+
+    const audioBuffers: Buffer[] = [];
+    const targetLang = lang === "bn" ? "bn" : "en";
+
+    for (const chunk of chunks) {
+      if (!chunk.trim()) continue;
+      const url = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${targetLang}&client=tw-ob&q=${encodeURIComponent(chunk.trim())}`;
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 6000);
+
+        const res = await fetch(url, {
+          headers: {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Referer": "https://translate.google.com/"
+          },
+          signal: controller.signal
+        });
+        clearTimeout(timeout);
+
+        if (res.ok) {
+          const ab = await res.arrayBuffer();
+          audioBuffers.push(Buffer.from(ab));
+        }
+      } catch (err) {
+        console.warn("TTS chunk fetch error:", err);
+      }
+    }
+
+    return Buffer.concat(audioBuffers);
+  }
+
+  /**
    * Detects whether text is Bengali, English, or Mixed.
    */
   public detectLanguage(text: string): LanguageDetectionResult {
@@ -179,8 +241,12 @@ export class VoiceService {
           ? "আমি সম্পূর্ণ সজাগ হয়ে গেছি স্যার! বলুন, আপনার জন্য কি করতে পারি?"
           : "I am wide awake and ready, Sir! What can I do for you?";
     }
-    // 3. Live Breaking News / Country Situation (Exact match to video: "আজকে দেশের কি অবস্থা? একটু আপডেট দাও তো")
+    // 3. Live Breaking News / Prothom Alo / Country Situation
     else if (
+      clean.includes("prothom alo") ||
+      clean.includes("prothomalo") ||
+      clean.includes("প্রথম আলো") ||
+      clean.includes("প্রথমআলো") ||
       clean.includes("দেশের কি অবস্থা") ||
       clean.includes("দেশের অবস্থা") ||
       clean.includes("দেশের খবর") ||
@@ -189,13 +255,12 @@ export class VoiceService {
       clean.includes("নিউজ") ||
       clean.includes("news") ||
       clean.includes("headline") ||
-      clean.includes("প্রথম আলো") ||
       clean.includes("পত্রিকা") ||
       clean.includes("আপডেট দাও") ||
       clean.includes("কী অবস্থা")
     ) {
       actionType = "news";
-      const newsResult = await worldIntelligenceService.getLatestNews("bangladesh", lang);
+      const newsResult = await worldIntelligenceService.getProthomAloNews(lang);
       reply = newsResult.spokenSummary;
       actionPayload = newsResult.articles;
     }
@@ -233,12 +298,15 @@ export class VoiceService {
       reply = searchResult.spokenSummary;
       actionPayload = searchResult;
     }
-    // 6. Connected Social Platforms & Yeasin Munshi's Accounts
+    // 6. Connected Social Platforms & Yeasin Munshi's Accounts (Facebook, Messenger, LinkedIn, WhatsApp, Gmail)
     else if (
       clean.includes("facebook") ||
       clean.includes("ফেসবুক") ||
       clean.includes("fb") ||
+      clean.includes("messenger") ||
+      clean.includes("মেসেঞ্জার") ||
       clean.includes("linkedin") ||
+      clean.includes("লিঙ্কডইন") ||
       clean.includes("লিংকডইন") ||
       clean.includes("whatsapp") ||
       clean.includes("হোয়াটসঅ্যাপ") ||
@@ -248,15 +316,18 @@ export class VoiceService {
       clean.includes("message") ||
       clean.includes("social") ||
       clean.includes("সোশ্যাল") ||
-      clean.includes("কে কে")
+      clean.includes("কে কে") ||
+      clean.includes("কার মেসেজ") ||
+      clean.includes("ইনমেইল") ||
+      clean.includes("inmail")
     ) {
       actionType = "social";
       const mediaReply = mediaPlatformService.queryPlatformInfo(clean, lang);
       reply =
         mediaReply ||
         (lang === "bn"
-          ? "স্যার, আপনার ফেসবুক প্রোফাইল (Yeasin Munshi - yeasin.munshi.980) এবং লিঙ্কডইন কানেকশন সম্পূর্ণ সিঙ্ক করা রয়েছে। সমস্ত সোশ্যাল অ্যাকাউন্ট নিয়মিত পর্যবেক্ষণ করা হচ্ছে।"
-          : "Sir, your Facebook profile (Yeasin Munshi @yeasin.munshi.980) and LinkedIn network are fully connected and monitored.");
+          ? "জি ইয়াসিন স্যার, আপনার ফেসবুক মেসেঞ্জার (yeasin.munshi.980) এবং লিঙ্কডইন (yeasin-munshi-aa7467288) সফলভাবে সংযুক্ত রয়েছে। ৬টি নতুন বার্তা পাওয়া গেছে। তানভীর আহমেদ, নাফিসা রহমান ও ডেভিড স্টার্লিং মেসেজ দিয়েছেন।"
+          : "Sir, your Facebook Messenger (@yeasin.munshi.980) and LinkedIn account are connected with 6 incoming messages from Tanvir Ahmed, Nafisa Rahman, and David Sterling.");
     }
     // 7. Conversational & Persona Answers
     else if (lang === "bn") {

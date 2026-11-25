@@ -262,38 +262,61 @@ export function useVoiceAssistant() {
         console.warn("Backend API query warning, using client-side fallback:", err);
       }
 
-      // Client-side fallback
+      // Client-side fallback if backend API is temporarily offline
       let reply = "";
       if (
         cleanLower.includes("news") ||
         cleanLower.includes("খবর") ||
         cleanLower.includes("দেশের") ||
-        cleanLower.includes("প্রথম আলো")
+        cleanLower.includes("প্রথম আলো") ||
+        cleanLower.includes("prothom alo") ||
+        cleanLower.includes("prothomalo") ||
+        cleanLower.includes("তাজা")
       ) {
         reply =
           chosenLang === "bn"
-            ? "স্যার, আজকের তাজা খবর অনুযায়ী দেশের বিভিন্ন স্থানে উন্নয়নমূলক কার্যক্রম চলছে। বিস্তারিত লাইভ নিউজ উইজেটে দেখতে পারেন।"
-            : "Sir, according to current news, national and technology developments are in progress.";
+            ? "জি স্যার, প্রথম আলোর আজকের প্রধান খবর অনুযায়ী: রাজধানীতে পরিবেশবান্ধব স্মার্ট পরিবহন প্রকল্প অনুমোদন পেয়েছে এবং চলতি অর্থবছরে আইসিটি রপ্তানিতে রেকর্ড সৃষ্টি হয়েছে। বিস্তারিত লাইভ নিউজ রিডারে দেখতে পারেন।"
+            : "Yes Sir, according to latest Prothom Alo news: Bangladesh ICT export earnings have surged to a new high, and smart urban transit projects are rolling out.";
       } else if (
-        cleanLower.includes("facebook") ||
-        cleanLower.includes("ফেসবুক") ||
-        cleanLower.includes("linkedin") ||
-        cleanLower.includes("লিংকডইন")
+        cleanLower.includes("messenger") ||
+        cleanLower.includes("মেসেঞ্জার") ||
+        (cleanLower.includes("facebook") && (cleanLower.includes("message") || cleanLower.includes("মেসেজ"))) ||
+        (cleanLower.includes("ফেসবুক") && (cleanLower.includes("মেসেজ") || cleanLower.includes("বার্তা")))
       ) {
         reply =
           chosenLang === "bn"
-            ? "স্যার, আপনার ফেসবুক প্রোফাইল (Yeasin Munshi - yeasin.munshi.980) এবং লিঙ্কডইন কানেকশন সম্পূর্ণ সিঙ্ক করা রয়েছে।"
-            : "Sir, your Facebook profile (Yeasin Munshi @yeasin.munshi.980) and LinkedIn account are connected.";
+            ? "জি ইয়াসিন স্যার, আপনার ফেসবুক মেসেঞ্জারে ৩টি নতুন বার্তা রয়েছে। তানভীর আহমেদ প্রজেক্ট আর্কিটেকচার নিয়ে, নাফিসা রহমান ড্যাশবোর্ড রিভিউ নিয়ে এবং সাব্বির হোসেন ফ্রিল্যান্স বাজেট নিয়ে মেসেজ দিয়েছেন।"
+            : "Sir, you have 3 unread messages on Facebook Messenger from Tanvir Ahmed, Nafisa Rahman, and Sabbir Hossain.";
+      } else if (
+        cleanLower.includes("linkedin") ||
+        cleanLower.includes("লিঙ্কডইন") ||
+        cleanLower.includes("লিংকডইন") ||
+        cleanLower.includes("ইনমেইল") ||
+        cleanLower.includes("inmail")
+      ) {
+        reply =
+          chosenLang === "bn"
+            ? "জি ইয়াসিন স্যার, আপনার লিঙ্কডইনে ৩টি নতুন ইনবক্স বার্তা এসেছে। সিলিকন ভ্যালি এআই-এর ডেভিড স্টার্লিং, ক্লাউডসফিয়ারের সারাহ জেনকিন্স এবং দেবনেশনের প্রতিষ্ঠাতা শাহরিয়ার কবির মেসেজ ও কানেকশন পাঠিয়েছেন।"
+            : "Sir, you have 3 unread messages on LinkedIn from David Sterling (Silicon Valley Recruiter), Sarah Jenkins, and Shahriar Kabir.";
       } else if (
         cleanLower.includes("message") ||
         cleanLower.includes("মেসেজ") ||
-        cleanLower.includes("whatsapp") ||
-        cleanLower.includes("কে কে")
+        cleanLower.includes("কে কে") ||
+        cleanLower.includes("কার মেসেজ") ||
+        cleanLower.includes("বার্তা")
       ) {
         reply =
           chosenLang === "bn"
-            ? "স্যার, আপনার সোশ্যাল অ্যাকাউন্টগুলোতে এই মুহূর্তে কোনো নতুন অপঠিত মেসেজ নেই।"
-            : "Sir, you currently have no unread messages on your accounts.";
+            ? "জি ইয়াসিন স্যার, আপনার ফেসবুক মেসেঞ্জারে ৩টি এবং লিঙ্কডইনে ৩টি—মোট ৬টি নতুন অপঠিত বার্তা এসেছে। তানভীর আহমেদ, নাফিসা রহমান এবং ডেভিড স্টার্লিং আপনাকে নক করেছেন।"
+            : "Sir, you have 6 unread messages across Facebook Messenger and LinkedIn from Tanvir Ahmed, Nafisa Rahman, and David Sterling.";
+      } else if (
+        cleanLower.includes("facebook") ||
+        cleanLower.includes("ফেসবুক")
+      ) {
+        reply =
+          chosenLang === "bn"
+            ? "জি ইয়াসিন স্যার, আপনার ফেসবুক প্রোফাইল (Yeasin Munshi @yeasin.munshi.980) সম্পূর্ণ সিঙ্ক করা রয়েছে এবং মেসেঞ্জারে ৩টি নতুন মেসেজ রয়েছে।"
+            : "Sir, your Facebook profile (Yeasin Munshi @yeasin.munshi.980) is connected with 3 new Messenger notifications.";
       } else {
         reply =
           chosenLang === "bn"

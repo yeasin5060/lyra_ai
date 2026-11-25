@@ -15,6 +15,8 @@ export class SoftFemaleVoiceSynthesizer {
   private synth: SpeechSynthesis | null = null;
   private voices: SpeechSynthesisVoice[] = [];
   private audioCtx: AudioContext | null = null;
+  private currentAudio: HTMLAudioElement | null = null;
+  private isAudioPlaying = false;
 
   constructor() {
     if (typeof window !== "undefined") {
@@ -140,29 +142,88 @@ export class SoftFemaleVoiceSynthesizer {
       return;
     }
 
+    // Stop any currently playing audio or speech utterance
+    this.stop();
+
+    // Play subtle soft chime to wake audio hardware
+    this.playChime(640, 0.12);
+
+    const isBengaliScript = /[\u0980-\u09FF]/.test(text);
+    const lang = options.language === "bn" || isBengaliScript ? "bn" : "en";
+    const { voice, isNativeLang } = this.findBestVoice(lang);
+
+    // If text contains Bengali, prioritize high-fidelity server TTS stream for crystal-clear natural female voice
+    // unless an authentic native Bengali TTS voice is already installed in the OS.
+    if ((lang === "bn" || !isNativeLang) && typeof window !== "undefined") {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+        const ttsUrl = `${apiUrl}/api/voice/tts?text=${encodeURIComponent(text.trim())}&lang=${lang}`;
+
+        const audio = new Audio(ttsUrl);
+        this.currentAudio = audio;
+
+        let ended = false;
+        const markDone = () => {
+          if (!ended) {
+            ended = true;
+            this.isAudioPlaying = false;
+            this.currentAudio = null;
+            options.onEnd?.();
+          }
+        };
+
+        audio.onplay = () => {
+          this.isAudioPlaying = true;
+          options.onStart?.();
+        };
+
+        audio.onended = () => {
+          markDone();
+        };
+
+        audio.onerror = () => {
+          console.warn("Server TTS audio streaming failed, falling back to Web Speech API");
+          this.speakWebSpeechFallback(text, lang, voice, options);
+        };
+
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          playPromise.catch((err) => {
+            console.warn("Audio autoplay blocked or error, falling back to speech synthesis:", err);
+            this.speakWebSpeechFallback(text, lang, voice, options);
+          });
+        }
+        return;
+      } catch (err) {
+        console.warn("Direct audio creation failed:", err);
+      }
+    }
+
+    // Standard Web Speech API fallback
+    this.speakWebSpeechFallback(text, lang, voice, options);
+  }
+
+  private speakWebSpeechFallback(
+    text: string,
+    lang: "bn" | "en",
+    voice: SpeechSynthesisVoice | null,
+    options: SynthesisOptions
+  ): void {
     if (!this.synth && typeof window !== "undefined" && "speechSynthesis" in window) {
       this.synth = window.speechSynthesis;
     }
 
     if (!this.synth) {
-      console.warn("SpeechSynthesis is not supported on this device/browser.");
       options.onEnd?.();
       return;
     }
 
     try {
-      // Cancel previous utterance and resume if paused
       this.synth.cancel();
       if (this.synth.paused) {
         this.synth.resume();
       }
     } catch {}
-
-    // Play subtle soft chime to wake audio hardware
-    this.playChime(640, 0.12);
-
-    const lang = options.language === "bn" ? "bn" : "en";
-    const { voice, isNativeLang } = this.findBestVoice(lang);
 
     const utterance = new SpeechSynthesisUtterance(text);
     activeUtterance = utterance;
@@ -174,11 +235,9 @@ export class SoftFemaleVoiceSynthesizer {
       utterance.voice = voice;
       utterance.lang = voice.lang;
     } else {
-      // Fallback
       utterance.lang = lang === "bn" ? "bn-BD" : "en-US";
     }
 
-    // Soft & Sweet tuning
     utterance.pitch = options.pitch ?? (lang === "bn" ? 1.15 : 1.08);
     utterance.rate = options.rate ?? 0.94;
     utterance.volume = options.volume ?? 1.0;
@@ -205,7 +264,6 @@ export class SoftFemaleVoiceSynthesizer {
       finish();
     };
 
-    // Chrome failsafe timeout: if utterance doesn't finish after expected reading time
     const words = text.split(/\s+/).length;
     const maxDurationMs = Math.max(4000, words * 600);
     setTimeout(() => {
@@ -216,8 +274,6 @@ export class SoftFemaleVoiceSynthesizer {
 
     try {
       this.synth.speak(utterance);
-
-      // Force resume in Chrome if synthesis stays queued
       setTimeout(() => {
         if (this.synth && this.synth.paused) {
           this.synth.resume();
@@ -230,6 +286,15 @@ export class SoftFemaleVoiceSynthesizer {
   }
 
   public stop(): void {
+    if (this.currentAudio) {
+      try {
+        this.currentAudio.pause();
+        this.currentAudio.currentTime = 0;
+      } catch {}
+      this.currentAudio = null;
+    }
+    this.isAudioPlaying = false;
+
     if (this.synth) {
       try {
         this.synth.cancel();
@@ -239,7 +304,7 @@ export class SoftFemaleVoiceSynthesizer {
   }
 
   public isSpeaking(): boolean {
-    return this.synth ? this.synth.speaking : false;
+    return this.isAudioPlaying || (this.synth ? this.synth.speaking : false);
   }
 }
 

@@ -29,3 +29,4 @@ export interface SearchResult {
   sourceName: string;
   spokenSummary: string;
 }
+

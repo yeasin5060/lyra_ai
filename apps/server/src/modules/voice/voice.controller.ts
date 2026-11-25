@@ -55,6 +55,41 @@ export class VoiceController {
       });
     }
   }
+
+  public async synthesizeAudio(req: Request, res: Response): Promise<void> {
+    const text = (req.query.text as string) || (req.body?.text as string) || "";
+    const lang = ((req.query.lang as string) || (req.body?.lang as string) || "bn") as "bn" | "en";
+
+    if (!text || typeof text !== "string" || !text.trim()) {
+      res.status(400).json({
+        success: false,
+        message: "Text parameter is required for TTS synthesis"
+      });
+      return;
+    }
+
+    try {
+      const audioBuffer = await voiceService.fetchTtsAudioStream(text, lang);
+      if (!audioBuffer || audioBuffer.length === 0) {
+        res.status(502).json({
+          success: false,
+          message: "Unable to synthesize audio stream"
+        });
+        return;
+      }
+
+      res.setHeader("Content-Type", "audio/mpeg");
+      res.setHeader("Content-Length", audioBuffer.length);
+      res.setHeader("Cache-Control", "public, max-age=86400");
+      res.send(audioBuffer);
+    } catch (error) {
+      console.error("TTS audio synthesis failed:", error);
+      res.status(500).json({
+        success: false,
+        message: "TTS synthesis failed"
+      });
+    }
+  }
 }
 
 export const voiceController = new VoiceController();

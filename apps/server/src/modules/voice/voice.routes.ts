@@ -8,5 +8,11 @@ router.get("/profiles", (req, res) => voiceController.getProfiles(req, res));
 router.post("/process", (req, res) => {
   void voiceController.processVoice(req, res);
 });
+router.get("/tts", (req, res) => {
+  void voiceController.synthesizeAudio(req, res);
+});
+router.post("/tts", (req, res) => {
+  void voiceController.synthesizeAudio(req, res);
+});
 
 export default router;
