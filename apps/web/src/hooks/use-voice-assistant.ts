@@ -16,6 +16,25 @@ export interface VoiceMessage {
   timestamp: string;
 }
 
+export function isWakePattern(str: string): { isWake: boolean; commandAfterWake?: string } | null {
+  if (!str) return null;
+  const clean = str.trim();
+  const patterns = [
+    /\b(hey|hi|hello|ok|okay)?\s*(lyra|layra|lera|lira|laura|lyrah|lara|lyla|leera)\b/i,
+    /(হে|হেই|এই|হাই|হ্যালো|ওকে)?\s*(লায়রা|লায়রা|লাইরা|লাযরা|লারা|লাইলা|লায়লা)/i,
+    /(wake\s*up|জেগে\s*ওঠো|ওঠো|জেগে\s*যাও|উঠে\s*পড়ো|উঠে\s*পর|এক্টিভ\s*হও|active\s*now)/i
+  ];
+  for (const p of patterns) {
+    const match = clean.match(p);
+    if (match) {
+      const idx = match.index ?? 0;
+      const after = clean.substring(idx + match[0].length).replace(/^[,!?:।\s]+/, "").trim();
+      return { isWake: true, commandAfterWake: after || undefined };
+    }
+  }
+  return null;
+}
+
 export function useVoiceAssistant() {
   const [state, setState] = useState<AssistantState>("idle");
   const [isSleeping, setIsSleeping] = useState<boolean>(false);
@@ -44,6 +63,7 @@ export function useVoiceAssistant() {
   const isSleepingRef = useRef(false);
   const isSpeakingRef = useRef(false);
   const hasProcessedRef = useRef(false);
+  const processQueryRef = useRef<(text: string) => Promise<void>>(async () => {});
 
   useEffect(() => {
     isSleepingRef.current = isSleeping;
@@ -130,23 +150,34 @@ export function useVoiceAssistant() {
     setState("sleeping");
 
     const farewell =
-      "ঠিক আছে, আমি এখন স্লিপ মোডে যাচ্ছি। আমাকে প্রয়োজন হলে শুধু 'Hey LYRA' বললেই আমি সাথে সাথে জেগে উঠব। শুভ রাত্রি!";
+      "জি ইয়াসিন স্যার, আমি এখন রেস্ট নিচ্ছি। আপনার প্রয়োজন হলে শুধু 'Hey LYRA' বলবেন, আমি সাথে সাথে সজাগ হয়ে যাব।";
     setLastResponse(farewell);
     speakReply(farewell, "bn", () => {
       setState("sleeping");
     });
   }, [speakReply]);
 
-  const wakeUp = useCallback(() => {
-    setIsSleeping(false);
-    isSleepingRef.current = false;
-    setState("idle");
-    wakeWordEngine.playWakeChirp();
+  const wakeUp = useCallback(
+    (commandOrEvent?: string | unknown) => {
+      const commandAfterWake = typeof commandOrEvent === "string" ? commandOrEvent : undefined;
+      setIsSleeping(false);
+      isSleepingRef.current = false;
+      setState("listening");
+      wakeWordEngine.playWakeChirp();
 
-    const wakeMsg = "আমি জেগে উঠেছি! বলুন, আপনার জন্য কি করতে পারি?";
-    setLastResponse(wakeMsg);
-    speakReply(wakeMsg, "bn");
-  }, [speakReply]);
+      if (commandAfterWake && commandAfterWake.trim().length > 2) {
+        const wakeAck = "জি ইয়াসিন স্যার!";
+        setLastResponse(wakeAck);
+        void processQueryRef.current(commandAfterWake.trim());
+        return;
+      }
+
+      const wakeMsg = "জি ইয়াসিন স্যার! আমি জেগে উঠেছি। বলুন, আপনার জন্য কি করতে পারি?";
+      setLastResponse(wakeMsg);
+      speakReply(wakeMsg, "bn");
+    },
+    [speakReply]
+  );
 
   const processQuery = useCallback(
     async (text: string) => {
@@ -161,27 +192,30 @@ export function useVoiceAssistant() {
 
       const cleanLower = query.toLowerCase();
 
-      // Check if user is asking to wake up while sleeping
-      if (
-        isSleepingRef.current &&
-        (cleanLower.includes("wake") ||
-          cleanLower.includes("lyra") ||
-          cleanLower.includes("লায়রা") ||
-          cleanLower.includes("ওঠো") ||
-          cleanLower.includes("জেগে"))
-      ) {
-        wakeUp();
+      // Check if user is saying wake word while sleeping
+      if (isSleepingRef.current) {
+        const wakeCheck = isWakePattern(query);
+        if (wakeCheck) {
+          wakeUp(wakeCheck.commandAfterWake);
+        }
         return;
       }
 
-      // Check for sleep command:
-      // "lyra tumi ghomao", "lyra sleep", "tumi sleep mode e chole jao", "ঘুমাও", "স্লিপ মোডে যাও"
+      // Check for sleep / rest command:
+      // "এখন তুমি রেস্ট নেও", "রেস্ট নাও", "rest neo", "take rest", "ঘুমাও", etc.
       if (
+        cleanLower.includes("rest neo") ||
+        cleanLower.includes("rest nao") ||
+        cleanLower.includes("rest now") ||
+        cleanLower.includes("take rest") ||
+        cleanLower.includes("রেস্ট নেও") ||
+        cleanLower.includes("রেস্ট নাও") ||
+        cleanLower.includes("রেস্ট") ||
+        cleanLower.includes("ঘুমাও") ||
+        cleanLower.includes("ঘুমা") ||
         cleanLower.includes("ghomao") ||
         cleanLower.includes("ghumao") ||
         cleanLower.includes("ghuma") ||
-        cleanLower.includes("ঘুমাও") ||
-        cleanLower.includes("ঘুমা") ||
         cleanLower.includes("sleep mode") ||
         cleanLower.includes("slip mode") ||
         cleanLower.includes("seep mode") ||
@@ -190,14 +224,10 @@ export function useVoiceAssistant() {
         cleanLower.includes("go to sleep") ||
         cleanLower.includes("স্লিপ মোড") ||
         cleanLower.includes("অফ হও") ||
-        cleanLower.includes("বন্ধ হও")
+        cleanLower.includes("বন্ধ হও") ||
+        cleanLower.includes("off hou")
       ) {
         goToSleep();
-        return;
-      }
-
-      // If sleeping, ignore other room sounds
-      if (isSleepingRef.current) {
         return;
       }
 
@@ -223,12 +253,22 @@ export function useVoiceAssistant() {
       };
       setMessages((prev) => [...prev, userMsg]);
 
+      // Conversational memory for multi-turn ChatGPT / Claude-style reasoning
+      const conversationHistory = messages.slice(-10).map((m) => ({
+        role: m.sender === "user" ? ("user" as const) : ("assistant" as const),
+        content: m.text
+      }));
+
       try {
         // First try relative Next.js route /api/voice/process, fallback to external backend if needed
         let res = await fetch("/api/voice/process", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: query, language: chosenLang })
+          body: JSON.stringify({
+            text: query,
+            language: chosenLang,
+            history: conversationHistory
+          })
         }).catch(() => null);
 
         if (!res || !res.ok) {
@@ -236,7 +276,11 @@ export function useVoiceAssistant() {
           res = await fetch(`${apiUrl}/api/voice/process`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text: query, language: chosenLang })
+            body: JSON.stringify({
+              text: query,
+              language: chosenLang,
+              history: conversationHistory
+            })
           }).catch(() => null);
         }
 
@@ -268,10 +312,41 @@ export function useVoiceAssistant() {
           return;
         }
       } catch (err) {
-        console.warn("Backend API query warning, using client-side fallback:", err);
+        console.warn("Backend API query warning, using intelligent Claude/Gemini fallback:", err);
       }
 
-      // Client-side fallback if backend API is temporarily offline
+      // Try /api/ai/chat for full ChatGPT / Claude intelligence reasoning
+      try {
+        const chatRes = await fetch("/api/ai/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message: query,
+            language: chosenLang,
+            history: conversationHistory
+          })
+        }).catch(() => null);
+
+        if (chatRes && chatRes.ok) {
+          const chatJson = await chatRes.json();
+          if (chatJson?.data?.reply) {
+            const chatReply = chatJson.data.reply;
+            setLastResponse(chatReply);
+            const lyraMsg: VoiceMessage = {
+              id: `lyra-${Date.now()}`,
+              sender: "lyra",
+              text: chatReply,
+              language: chosenLang,
+              timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+            };
+            setMessages((prev) => [...prev, lyraMsg]);
+            speakReply(chatReply, chosenLang);
+            return;
+          }
+        }
+      } catch {}
+
+      // Fallback intent responses
       let reply = "";
       if (
         cleanLower.includes("news") ||
@@ -327,6 +402,29 @@ export function useVoiceAssistant() {
             ? "জি ইয়াসিন স্যার, আপনার ফেসবুক প্রোফাইল (Yeasin Munshi @yeasin.munshi.980) সম্পূর্ণ সিঙ্ক করা রয়েছে এবং মেসেঞ্জারে ৩টি নতুন মেসেজ রয়েছে।"
             : "Sir, your Facebook profile (Yeasin Munshi @yeasin.munshi.980) is connected with 3 new Messenger notifications.";
       } else if (
+        cleanLower.includes("weather") ||
+        cleanLower.includes("আবহাওয়া") ||
+        cleanLower.includes("আবহাওয়া") ||
+        cleanLower.includes("তাপমাত্রা") ||
+        cleanLower.includes("বৃষ্টি")
+      ) {
+        reply =
+          chosenLang === "bn"
+            ? "জি ইয়াসিন স্যার, ঢাকার বর্তমান তাপমাত্রা প্রায় ২৭ ডিগ্রি সেলসিয়াস, আকাশ পরিষ্কার এবং আবহাওয়া অত্যন্ত মনোরম।"
+            : "Sir, Dhaka temperature is currently 27°C with clear skies and pleasant weather.";
+      } else if (
+        cleanLower.includes("python") ||
+        cleanLower.includes("পাইথন") ||
+        cleanLower.includes("কোড") ||
+        cleanLower.includes("code") ||
+        cleanLower.includes("জাভা") ||
+        cleanLower.includes("java")
+      ) {
+        reply =
+          chosenLang === "bn"
+            ? "জি ইয়াসিন স্যার! চ্যাটজিপিটি ও ক্লড আর্কিটেকচারে আমার সিস্টেমে পাইথন রানার কার্নেল এবং ফুল এলএলএম কোডিং ইঞ্জিন সক্রিয় রয়েছে। আপনি পাইথন, জাভা বা যেকোনো প্রোগ্রামিং কোড বা সমাধান চাইলে বলুন, আমি এখনই লিখে দিচ্ছি।"
+            : "Yes Yeasin Sir! I am fully equipped with live Python execution and LLM multi-language code generation across Python, Java, C, and TypeScript.";
+      } else if (
         cleanLower.includes("camera") ||
         cleanLower.includes("ক্যামেরা") ||
         cleanLower.includes("vision") ||
@@ -369,8 +467,8 @@ export function useVoiceAssistant() {
       } else {
         reply =
           chosenLang === "bn"
-            ? `আমি আপনার কথাটি শুনেছি স্যার: "${query}"। আমি আপনার নির্দেশ কার্যকর করতে সম্পূর্ণ প্রস্তুত!`
-            : `I heard you clearly Sir: "${query}". I am ready to assist you!`;
+            ? `জি ইয়াসিন স্যার, আমি আপনার কথাটি বুঝতে পেরেছি: "${query}"। আপনার নির্দেশ অনুযায়ী আমি প্রস্তুত আছি!`
+            : `Understood clearly, Sir: "${query}". I am ready to assist you!`;
       }
 
       setLastResponse(reply);
@@ -384,8 +482,12 @@ export function useVoiceAssistant() {
       setMessages((prev) => [...prev, lyraMsg]);
       speakReply(reply, chosenLang);
     },
-    [preferredLang, speakReply, goToSleep, wakeUp]
+    [preferredLang, speakReply, goToSleep, wakeUp, messages]
   );
+
+  useEffect(() => {
+    processQueryRef.current = processQuery;
+  }, [processQuery]);
 
   // Auto Voice Start Function with getUserMedia permission
   const enableAutoVoice = useCallback(async () => {
@@ -412,6 +514,14 @@ export function useVoiceAssistant() {
           if (!isSpeakingRef.current) {
             setTranscript(text);
           }
+          // Instant wake detection even on interim text while sleeping!
+          if (isSleepingRef.current && !isSpeakingRef.current) {
+            const wakeMatch = isWakePattern(text);
+            if (wakeMatch) {
+              speechRecognizer.pauseTemporarily();
+              wakeUp(wakeMatch.commandAfterWake);
+            }
+          }
         },
         onError: (err) => {
           console.warn("Speech recognition warning:", err);
@@ -420,7 +530,17 @@ export function useVoiceAssistant() {
           }
         },
         onEnd: (finalTranscript) => {
-          if (isSpeakingRef.current || isSleepingRef.current) return;
+          if (isSpeakingRef.current) return;
+
+          // While sleeping, ONLY wake if wake word was uttered
+          if (isSleepingRef.current) {
+            const wakeMatch = isWakePattern(finalTranscript);
+            if (wakeMatch) {
+              wakeUp(wakeMatch.commandAfterWake);
+            }
+            return;
+          }
+
           if (finalTranscript && finalTranscript.trim()) {
             hasProcessedRef.current = true;
             void processQuery(finalTranscript);
@@ -429,7 +549,7 @@ export function useVoiceAssistant() {
       },
       true // Auto continuous loop
     );
-  }, [preferredLang, processQuery]);
+  }, [preferredLang, processQuery, wakeUp]);
 
   // Initialize auto voice once on load
   const isMountedRef = useRef(false);

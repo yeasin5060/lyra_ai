@@ -276,7 +276,8 @@ export class VoiceService {
    */
   public async processVoice(
     text: string,
-    forcedLanguage?: "bn" | "en" | "auto"
+    forcedLanguage?: "bn" | "en" | "auto",
+    history?: Array<{ role: "user" | "assistant" | "system"; content: string }>
   ): Promise<VoiceProcessResult> {
     const detection = this.detectLanguage(text);
     const lang =
@@ -293,13 +294,20 @@ export class VoiceService {
     let actionType: "news" | "weather" | "search" | "social" | "vision" | "call" | "general" = "general";
     let actionPayload: unknown = null;
 
-    // 1. Sleep Mode Command
+    // 1. Sleep / Rest Mode Command
     if (
+      clean.includes("rest neo") ||
+      clean.includes("rest nao") ||
+      clean.includes("rest now") ||
+      clean.includes("take rest") ||
+      clean.includes("রেস্ট নেও") ||
+      clean.includes("রেস্ট নাও") ||
+      clean.includes("রেস্ট") ||
+      clean.includes("ঘুমাও") ||
+      clean.includes("ঘুমা") ||
       clean.includes("ghomao") ||
       clean.includes("ghumao") ||
       clean.includes("ghuma") ||
-      clean.includes("ঘুমাও") ||
-      clean.includes("ঘুমা") ||
       clean.includes("sleep mode") ||
       clean.includes("slip mode") ||
       clean.includes("seep mode") ||
@@ -308,27 +316,39 @@ export class VoiceService {
       clean.includes("lyra slip") ||
       clean.includes("স্লিপ মোড") ||
       clean.includes("অফ হও") ||
-      clean.includes("বন্ধ হও")
+      clean.includes("বন্ধ হও") ||
+      clean.includes("off hou")
     ) {
       isSleepCommand = true;
       reply =
         lang === "bn"
-          ? "ঠিক আছে স্যার, আমি এখন স্লিপ মোডে যাচ্ছি। আমাকে প্রয়োজন হলে শুধু 'Hey LYRA' বললেই আমি জেগে উঠব। শুভ রাত্রি!"
-          : "Understood Sir! Entering sleep mode now. Whenever you need me again, just say 'Hey LYRA' and I will wake right up. Sweet dreams!";
+          ? "জি ইয়াসিন স্যার, আমি এখন রেস্ট নিচ্ছি। আপনার প্রয়োজন হলে শুধু 'Hey LYRA' বলবেন, আমি সাথে সাথে সজাগ হয়ে যাব।"
+          : "Understood Sir, entering rest mode now. Whenever you need me again, just say 'Hey LYRA' and I will wake right up!";
     }
-    // 2. Wake Command
+    // 2. Wake Up Command
     else if (
+      clean.includes("hey lyra") ||
+      clean.includes("hello lyra") ||
+      clean.includes("ok lyra") ||
+      clean.includes("lyra") ||
+      clean.includes("হে লায়রা") ||
+      clean.includes("হেই লায়রা") ||
+      clean.includes("লায়রা") ||
+      clean.includes("লাইরা") ||
       clean.includes("wake up") ||
       clean.includes("জেগে ওঠো") ||
       clean.includes("ওঠো") ||
       clean.includes("জেগে যাও") ||
-      clean.includes("উঠে পর")
+      clean.includes("উঠে পর") ||
+      clean.includes("উঠে পড়") ||
+      clean.includes("এক্টিভ হও") ||
+      clean.includes("active")
     ) {
       isWakeCommand = true;
       reply =
         lang === "bn"
-          ? "আমি সম্পূর্ণ সজাগ হয়ে গেছি স্যার! বলুন, আপনার জন্য কি করতে পারি?"
-          : "I am wide awake and ready, Sir! What can I do for you?";
+          ? "জি ইয়াসিন স্যার! আমি জেগে উঠেছি। বলুন, আপনার জন্য কি করতে পারি?"
+          : "I am wide awake and ready, Yeasin Sir! What can I do for you?";
     }
     // 3. Live Breaking News / Prothom Alo / Country Situation
     else if (
@@ -517,7 +537,7 @@ export class VoiceService {
     // 9. Conversational & Persona Answers via Claude & Gemini Neural Models
     else {
       try {
-        const llmResult = await llmService.generateReply(text, [], { language: lang });
+        const llmResult = await llmService.generateReply(text, history || [], { language: lang });
         reply = llmResult.reply;
         actionPayload = {
           modelUsed: llmResult.modelUsed,

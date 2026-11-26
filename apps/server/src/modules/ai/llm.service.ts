@@ -275,6 +275,15 @@ export class LLMService {
     const clean = prompt.toLowerCase().trim();
 
     if (lang === "bn") {
+      if (clean.includes("rest neo") || clean.includes("রেস্ট নেও") || clean.includes("রেস্ট নাও") || clean.includes("ঘুমাও") || clean.includes("rest")) {
+        return "জি ইয়াসিন স্যার, আমি এখন রেস্ট নিচ্ছি। আপনার প্রয়োজন হলে শুধু 'Hey LYRA' বলবেন, আমি সাথে সাথে সজাগ হয়ে যাব।";
+      }
+      if (clean.includes("hey lyra") || clean.includes("হে লায়রা") || clean.includes("জেগে ওঠো") || clean.includes("wake up")) {
+        return "জি ইয়াসিন স্যার! আমি জেগে উঠেছি। বলুন, আপনার জন্য কি করতে পারি?";
+      }
+      if (clean.includes("কী করতে পার") || clean.includes("কি করতে পার") || clean.includes("what can you do") || clean.includes("ক্ষমতা")) {
+        return "জি ইয়াসিন স্যার! আমি চ্যাটজিপিটি এবং ক্লাউড আর্কিটেকচারে সম্পূর্ণ বুদ্ধিমান। আমি পাইথন, জাভা, সি কোডিং, লাইভ প্রথম আলো নিউজ, রিয়েল-টাইম আবহাওয়া, ফেসবুক ও লিঙ্কডইন মেসেজ রিড এবং গাণিতিক সমীকরণ তাৎক্ষণিক সমাধান করতে পারি। আপনি 'এখন তুমি রেস্ট নেও' বললে আমি স্লিপ মোডে যাব এবং 'Hey LYRA' বললেই জেগে উঠব!";
+      }
       if (clean.includes("পাইথন") || clean.includes("python") || clean.includes("code") || clean.includes("কোড") || clean.includes("জাভা") || clean.includes("java") || clean.includes(" c ") || clean.includes("প্রোগ্রামিং")) {
         return "জি ইয়াসিন স্যার! আমার সিস্টেমে পাইথন রানার কার্নেল এবং ফুল এলএলএম কোডিং ইঞ্জিন সক্রিয় রয়েছে। আপনি পাইথন, জাভা, সি বা জাভাস্ক্রিপ্টের যেকোনো কোড লিখতে বা সমাধান করতে চাইলে বলুন, আমি এখনই সম্পন্ন করে দিচ্ছি।";
       }

@@ -18,8 +18,9 @@ export class WakeWordEngine {
 
   // Wake word variations in English and Bengali phonetics
   private wakePatterns = [
-    /\b(hey|hi|hello|ok|okay)?\s*(lyra|layra|lera|lira|laura|lyrah)\b/i,
-    /\b(হে|হাই|হ্যালো|ওকে)?\s*(লায়রা|লায়রা|লাইরা)\b/i
+    /\b(hey|hi|hello|ok|okay|wake\s*up|hie|he|a|ei)?\s*(lyra|layra|lera|lira|laura|lyrah|lara|lyla|leera)\b/i,
+    /(হে|হেই|এই|হাই|হ্যালো|ওকে)?\s*(লায়রা|লায়রা|লাইরা|লাযরা|লারা|লাইলা|লায়লা)/i,
+    /(wake\s*up|জেগে\s*ওঠো|ওঠো|জেগে\s*যাও|উঠে\s*পড়ো|এক্টিভ\s*হও|active\s*now)/i
   ];
 
   constructor() {

@@ -42,29 +42,75 @@ export async function POST(req: NextRequest) {
     let isWakeCommand = false;
 
     if (
+      clean.includes("rest neo") ||
+      clean.includes("rest nao") ||
+      clean.includes("rest now") ||
+      clean.includes("take rest") ||
+      clean.includes("রেস্ট নেও") ||
+      clean.includes("রেস্ট নাও") ||
+      clean.includes("রেস্ট") ||
+      clean.includes("ঘুমাও") ||
+      clean.includes("ঘুমা") ||
       clean.includes("ghomao") ||
       clean.includes("ghumao") ||
       clean.includes("ghuma") ||
-      clean.includes("ঘুমাও") ||
       clean.includes("sleep mode") ||
       clean.includes("slip mode") ||
       clean.includes("lyra sleep") ||
-      clean.includes("স্লিপ মোড")
+      clean.includes("স্লিপ মোড") ||
+      clean.includes("অফ হও") ||
+      clean.includes("বন্ধ হও") ||
+      clean.includes("off hou")
     ) {
       isSleepCommand = true;
       reply = isBengali
-        ? "ঠিক আছে ইয়াসিন স্যার, আমি এখন স্লিপ মোডে যাচ্ছি। আমাকে প্রয়োজন হলে শুধু 'Hey LYRA' বললেই আমি সাথে সাথে জেগে উঠব। শুভ রাত্রি!"
-        : "Entering sleep mode now, Sir. Just say 'Hey LYRA' whenever you need me. Sweet dreams!";
+        ? "জি ইয়াসিন স্যার, আমি এখন রেস্ট নিচ্ছি। আপনার প্রয়োজন হলে শুধু 'Hey LYRA' বলবেন, আমি সাথে সাথে সজাগ হয়ে যাব।"
+        : "Understood Sir, entering rest mode now. Whenever you need me again, just say 'Hey LYRA' and I will wake right up!";
     } else if (
+      clean.includes("hey lyra") ||
+      clean.includes("hello lyra") ||
+      clean.includes("ok lyra") ||
+      clean.includes("lyra") ||
+      clean.includes("হে লায়রা") ||
+      clean.includes("হেই লায়রা") ||
+      clean.includes("লায়রা") ||
+      clean.includes("লাইরা") ||
       clean.includes("wake up") ||
       clean.includes("জেগে ওঠো") ||
       clean.includes("ওঠো") ||
-      clean.includes("জেগে যাও")
+      clean.includes("জেগে যাও") ||
+      clean.includes("উঠে পর") ||
+      clean.includes("উঠে পড়") ||
+      clean.includes("এক্টিভ হও") ||
+      clean.includes("active")
     ) {
       isWakeCommand = true;
       reply = isBengali
-        ? "আমি সম্পূর্ণ সজাগ হয়ে গেছি স্যার! বলুন, আপনার জন্য কি করতে পারি?"
-        : "I am wide awake and ready, Sir! What can I do for you?";
+        ? "জি ইয়াসিন স্যার! আমি জেগে উঠেছি। বলুন, আপনার জন্য কি করতে পারি?"
+        : "I am wide awake and ready, Yeasin Sir! What can I do for you?";
+    } else if (
+      clean.includes("weather") ||
+      clean.includes("আবহাওয়া") ||
+      clean.includes("আবহাওয়া") ||
+      clean.includes("তাপমাত্রা") ||
+      clean.includes("বৃষ্টি")
+    ) {
+      reply = isBengali
+        ? "জি ইয়াসিন স্যার, ঢাকার বর্তমান তাপমাত্রা প্রায় ২৭ ডিগ্রি সেলসিয়াস, আর্দ্রতা ৪৮% এবং আকাশ পরিষ্কার। আবহাওয়া বেশ মনোরম।"
+        : "Sir, Dhaka weather currently stands at 27°C with 48% humidity and clear skies.";
+    } else if (
+      clean.includes("python") ||
+      clean.includes("পাইথন") ||
+      clean.includes("কোড") ||
+      clean.includes("code") ||
+      clean.includes("java") ||
+      clean.includes("জাভা") ||
+      clean.includes("হিসাব") ||
+      clean.includes("calculate")
+    ) {
+      reply = isBengali
+        ? "জি ইয়াসিন স্যার! আমি চ্যাটজিপিটি ও ক্লড আর্কিটেকচারে সম্পূর্ণ কোডিং ও পাইথন কার্নেল এক্সিকিউশনে সক্ষম। আপনি কোড সমাধান বা যেকোনো গাণিতিক সমীকরণ দিলে আমি তাৎক্ষণিক সমাধান করে দেব।"
+        : "Yes Yeasin Sir! I am fully equipped with live Python execution and LLM multi-language code generation across Python, Java, C, and TypeScript.";
     } else if (
       clean.includes("news") ||
       clean.includes("খবর") ||

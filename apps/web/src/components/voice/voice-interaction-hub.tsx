@@ -119,7 +119,7 @@ export default function VoiceInteractionHub({ externalQuery }: Props) {
           {/* Sleep / Wake toggle button */}
           {isSleeping ? (
             <button
-              onClick={wakeUp}
+              onClick={() => wakeUp()}
               title="লায়রাকে জাগিয়ে তুলুন"
               className="flex items-center gap-1.5 rounded-xl border border-amber-400/40 bg-gradient-to-r from-amber-500/20 to-orange-500/20 px-3.5 py-1.5 text-xs font-bold text-amber-200 transition hover:bg-amber-500 hover:text-black shadow-lg shadow-amber-950/40"
             >

@@ -31,7 +31,7 @@ async function synthesizeNeuralVoice(text: string, voice: string): Promise<Buffe
       await fs.access(p);
       scriptPath = p;
       break;
-    } catch {}
+    } catch { }
   }
 
   try {
@@ -64,10 +64,10 @@ async function synthesizeNeuralVoice(text: string, voice: string): Promise<Buffe
   } finally {
     try {
       await fs.unlink(tempInput);
-    } catch {}
+    } catch { }
     try {
       await fs.unlink(tempOutput);
-    } catch {}
+    } catch { }
   }
 }
 
@@ -186,7 +186,7 @@ export async function GET(request: NextRequest) {
           const ab = await res.arrayBuffer();
           audioBuffers.push(Buffer.from(ab));
         }
-      } catch {}
+      } catch { }
     }
 
     if (audioBuffers.length > 0) {

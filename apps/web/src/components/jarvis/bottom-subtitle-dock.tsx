@@ -85,13 +85,23 @@ export default function BottomSubtitleDock({
 
         {/* Center: Status indicator with pulsating green dot */}
         <div className="flex-1 text-center font-sans text-xs text-gray-300 flex items-center justify-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
+          <span
+            className={`h-2 w-2 rounded-full ${
+              isSleeping
+                ? "bg-amber-400 shadow-[0_0_6px_#fbbf24]"
+                : isListening
+                ? "bg-emerald-400 animate-ping"
+                : "bg-emerald-400"
+            }`}
+          />
           <span className="truncate">
-            {isListening
+            {isSleeping
+              ? "লায়রা রেস্ট নিচ্ছে ('Hey LYRA' বলুন)..."
+              : isListening
               ? "লায়রা শুনছে..."
               : isSpeaking
               ? "লায়রা কথা বলছে..."
-              : "আপনি... বলতে কথা শুনতে প্রস্তুত"}
+              : "আপনি... কথা বলতে প্রস্তুত"}
           </span>
         </div>
 

@@ -28,9 +28,10 @@ export class VoiceController {
   }
 
   public async processVoice(req: Request, res: Response): Promise<void> {
-    const { text, language } = req.body as {
+    const { text, language, history } = req.body as {
       text?: string;
       language?: "bn" | "en" | "auto";
+      history?: Array<{ role: "user" | "assistant" | "system"; content: string }>;
     };
 
     if (!text || typeof text !== "string") {
@@ -42,7 +43,7 @@ export class VoiceController {
     }
 
     try {
-      const result = await voiceService.processVoice(text, language);
+      const result = await voiceService.processVoice(text, language, history);
       res.json({
         success: true,
         data: result

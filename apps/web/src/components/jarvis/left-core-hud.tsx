@@ -44,6 +44,7 @@ const DEFAULT_EVENTS: EventLog[] = [
 export default function LeftCoreHud({
   state = "idle",
   isSleeping = false,
+  onToggleSleep,
   onOpenNews,
   onOpenSocial
 }: Props) {
@@ -94,10 +95,33 @@ export default function LeftCoreHud({
             </div>
           </div>
 
-          <span className="flex items-center gap-1 rounded-full bg-rose-500/20 px-2 py-0.5 text-[10px] font-bold text-rose-300 border border-rose-500/30">
-            <span className="h-1.5 w-1.5 rounded-full bg-rose-400 animate-ping" />
-            LIVE
-          </span>
+          {isSleeping ? (
+            <button
+              type="button"
+              onClick={() => {
+                cyberAudio.playWakeChime();
+                onToggleSleep?.();
+              }}
+              className="flex items-center gap-1 rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-bold text-amber-300 border border-amber-500/30 hover:bg-amber-500/30 transition cursor-pointer"
+              title="Click or say 'Hey LYRA' to wake"
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+              RESTING
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                cyberAudio.playNodeClick();
+                onToggleSleep?.();
+              }}
+              className="flex items-center gap-1 rounded-full bg-rose-500/20 px-2 py-0.5 text-[10px] font-bold text-rose-300 border border-rose-500/30 hover:bg-rose-500/30 transition cursor-pointer"
+              title="Click or say 'রেস্ট নেও' to rest"
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-rose-400 animate-ping" />
+              LIVE
+            </button>
+          )}
         </div>
 
         {/* Audio Waveform Horizontal Line (Deterministic SSR with Smooth Client Tick) */}
