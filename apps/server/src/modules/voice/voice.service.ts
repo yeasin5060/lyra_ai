@@ -1,3 +1,7 @@
+import { spawn } from "node:child_process";
+import fs from "node:fs/promises";
+import path from "node:path";
+import os from "node:os";
 import { mediaPlatformService } from "../media/media.service.js";
 import { worldIntelligenceService } from "../world/world.service.js";
 import { visionIntelligenceService } from "../vision/vision.service.js";
@@ -40,10 +44,80 @@ export interface VoiceProcessResult {
   timestamp: string;
 }
 
+const serverTtsCache = new Map<string, Buffer>();
+
 export class VoiceService {
   /**
+   * Generates ultra-realistic human-like Neural Voice audio (Microsoft Neural via edge-tts).
+   * Default female Bengali voice is bn-BD-NabanitaNeural (soft, expressive, sweet, natural).
+   */
+  private async synthesizeNeuralTts(text: string, voice = "bn-BD-NabanitaNeural"): Promise<Buffer | null> {
+    const cacheKey = `${voice}:${text.trim()}`;
+    if (serverTtsCache.has(cacheKey)) {
+      return serverTtsCache.get(cacheKey)!;
+    }
+
+    const tempId = `lyra_tts_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    const tempInput = path.join(os.tmpdir(), `${tempId}.txt`);
+    const tempOutput = path.join(os.tmpdir(), `${tempId}.mp3`);
+
+    const candidateScriptPaths: string[] = [
+      path.resolve(process.cwd(), "src/modules/voice/edge_tts_helper.py"),
+      path.resolve(process.cwd(), "scripts/neural_tts.py"),
+      path.resolve(process.cwd(), "../scripts/neural_tts.py"),
+      path.resolve(process.cwd(), "../../scripts/neural_tts.py"),
+      "D:\\VSCODE\\LYRA AI\\scripts\\neural_tts.py"
+    ];
+
+    let scriptPath: string = candidateScriptPaths[0] || "scripts/neural_tts.py";
+    for (const p of candidateScriptPaths) {
+      try {
+        await fs.access(p);
+        scriptPath = p;
+        break;
+      } catch {}
+    }
+
+    try {
+      await fs.writeFile(tempInput, text, "utf-8");
+
+      const success = await new Promise<boolean>((resolve) => {
+        const child = spawn("python", [scriptPath, tempInput, tempOutput, voice], {
+          timeout: 9000,
+          env: { ...process.env, PYTHONIOENCODING: "utf-8" }
+        });
+
+        child.on("error", () => resolve(false));
+        child.on("close", (code: number | null) => resolve(code === 0));
+      });
+
+      if (success) {
+        const buffer = await fs.readFile(tempOutput);
+        if (buffer && buffer.length > 0) {
+          if (serverTtsCache.size > 200) {
+            const firstKey = serverTtsCache.keys().next().value;
+            if (firstKey) serverTtsCache.delete(firstKey);
+          }
+          serverTtsCache.set(cacheKey, buffer);
+          return buffer;
+        }
+      }
+      return null;
+    } catch {
+      return null;
+    } finally {
+      try {
+        await fs.unlink(tempInput);
+      } catch {}
+      try {
+        await fs.unlink(tempOutput);
+      } catch {}
+    }
+  }
+
+  /**
    * Fetches high-fidelity natural spoken audio MP3 stream.
-   * Splits long text into chunks, queries Google TTS client=tw-ob, and concatenates audio.
+   * Prioritizes Edge Neural TTS (bn-BD-NabanitaNeural) with Google TTS fallback.
    */
   public async fetchTtsAudioStream(text: string, lang: "bn" | "en" = "bn"): Promise<Buffer> {
     const cleanText = text
@@ -55,7 +129,19 @@ export class VoiceService {
       return Buffer.from([]);
     }
 
-    // Split text into readable chunks <= 160 chars
+    const targetVoice = lang === "bn" ? "bn-BD-NabanitaNeural" : "en-US-AriaNeural";
+
+    // 1. Try Ultra-Realistic Neural Speech first
+    try {
+      const neuralBuffer = await this.synthesizeNeuralTts(cleanText, targetVoice);
+      if (neuralBuffer && neuralBuffer.length > 0) {
+        return neuralBuffer;
+      }
+    } catch (err) {
+      console.warn("Neural TTS error, using fallback:", err);
+    }
+
+    // 2. Fallback to Google TTS chunking
     const chunks: string[] = [];
     const sentences = cleanText.split(/([।?!.\n]+)/);
 

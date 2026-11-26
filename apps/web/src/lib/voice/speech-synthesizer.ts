@@ -91,16 +91,18 @@ export class SoftFemaleVoiceSynthesizer {
     if (!all.length) return { voice: null, isNativeLang: false };
 
     if (lang === "bn") {
-      // Look for Bengali voices
-      const bnFemale = all.find(
+      // Look for natural high-quality Bengali voices
+      const bnNaturalFemale = all.find(
         (v) =>
           v.lang.toLowerCase().startsWith("bn") &&
-          (v.name.toLowerCase().includes("female") ||
+          (v.name.toLowerCase().includes("nabanita") ||
+            v.name.toLowerCase().includes("swara") ||
+            v.name.toLowerCase().includes("natural") ||
             v.name.toLowerCase().includes("sayantani") ||
             v.name.toLowerCase().includes("google") ||
-            v.name.toLowerCase().includes("bangla"))
+            v.name.toLowerCase().includes("female"))
       );
-      if (bnFemale) return { voice: bnFemale, isNativeLang: true };
+      if (bnNaturalFemale) return { voice: bnNaturalFemale, isNativeLang: true };
 
       const anyBn = all.find((v) => v.lang.toLowerCase().startsWith("bn"));
       if (anyBn) return { voice: anyBn, isNativeLang: true };
@@ -258,8 +260,8 @@ export class SoftFemaleVoiceSynthesizer {
       }
     }
 
-    utterance.pitch = options.pitch ?? (lang === "bn" ? 1.15 : 1.08);
-    utterance.rate = options.rate ?? 0.94;
+    utterance.pitch = options.pitch ?? (lang === "bn" ? 1.06 : 1.05);
+    utterance.rate = options.rate ?? (lang === "bn" ? 0.92 : 0.95);
     utterance.volume = options.volume ?? 1.0;
 
     let hasEnded = false;

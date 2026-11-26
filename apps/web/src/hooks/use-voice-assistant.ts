@@ -91,8 +91,8 @@ export function useVoiceAssistant() {
 
       softVoiceSynthesizer.speak(text, {
         language: lang,
-        pitch: isSleepingRef.current ? 1.05 : lang === "bn" ? 1.15 : 1.08,
-        rate: isSleepingRef.current ? 0.90 : lang === "bn" ? 0.94 : 0.95,
+        pitch: isSleepingRef.current ? 1.02 : lang === "bn" ? 1.06 : 1.05,
+        rate: isSleepingRef.current ? 0.88 : lang === "bn" ? 0.92 : 0.95,
         onStart: () => {
           setState("speaking");
         },
