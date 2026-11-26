@@ -1,5 +1,12 @@
 import type { AllMediaOverview, PlatformStats } from "./media.types.js";
-import { INBOUND_MESSAGES, type InboundMessage } from "./messages.data.js";
+import {
+  INBOUND_MESSAGES,
+  LIVE_EVENTS,
+  DASHBOARD_STATS,
+  type InboundMessage,
+  type EventLog,
+  type DashboardStats
+} from "./messages.data.js";
 
 export class MediaPlatformService {
   private platforms: PlatformStats[] = [
@@ -348,6 +355,14 @@ export class MediaPlatformService {
     }
 
     return "";
+  }
+
+  public getLiveEvents(): EventLog[] {
+    return LIVE_EVENTS;
+  }
+
+  public getDashboardStats(): DashboardStats {
+    return DASHBOARD_STATS;
   }
 }
 

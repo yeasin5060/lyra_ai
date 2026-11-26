@@ -5,6 +5,9 @@ const router: ExpressRouter = Router();
 
 router.get("/models", (req, res) => aiController.getModels(req, res));
 router.post("/model", (req, res) => aiController.setActiveModel(req, res));
+router.post("/execute", (req, res) => {
+  void aiController.executeCode(req, res);
+});
 router.post("/chat", (req, res) => {
   void aiController.chat(req, res);
 });

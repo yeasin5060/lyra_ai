@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { MessageSquare, Volume2, X, ChevronRight, CheckCheck, Sparkles, Send } from "lucide-react";
 import { cyberAudio } from "./cyber-audio-engine";
 
@@ -76,6 +76,25 @@ export default function CenterMessagesCard({
   onSelectChat
 }: Props) {
   const [chats, setChats] = useState<InboundChat[]>(DEFAULT_CHATS);
+
+  useEffect(() => {
+    fetch("/api/media/messages")
+      .then((res) => res.json())
+      .then((resData) => {
+        if (resData?.success && Array.isArray(resData.data)) {
+          const mapped: InboundChat[] = resData.data.map((m: any) => ({
+            id: m.id,
+            sender: m.senderName,
+            platform: m.platform,
+            message: m.messageText,
+            timeAgo: m.timeAgo,
+            isUnread: !m.read
+          }));
+          setChats(mapped);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   if (!isOpen) return null;
 

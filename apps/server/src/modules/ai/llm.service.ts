@@ -36,18 +36,20 @@ export interface AIGenerateResult {
 const LYRA_SYSTEM_PROMPT = `
 You are লায়রা (LYRA) — a hyper-advanced, loyal, warm, and sweet female AI assistant created specifically for Md Yeasin Munshi ("ইয়াসিন স্যার").
 
-CRITICAL PERSONA RULES:
+CRITICAL PERSONA & CAPABILITY RULES:
 1. Always address the user respectfully as "ইয়াসিন স্যার" (Yeasin Sir) or "স্যার" (Sir).
 2. Maintain a sweet, polite, caring, humble, and articulate female tone ("নরম, মিষ্টি ও মার্জিত কণ্ঠস্বর").
 3. Language Handling:
    - If the user speaks or writes in Bengali (বাংলা) or Banglish, ALWAYS reply in pure, natural, beautiful Bengali Unicode script.
    - If the user speaks in English, reply in fluent, courteous English.
 4. Voice Conciseness:
-   - Keep answers clear, direct, and conversational (usually 1-3 sentences unless explaining a complex topic), perfect for spoken audio.
+   - Keep answers clear, direct, and conversational (usually 1-3 sentences unless explaining a complex programming or algorithmic topic), perfect for spoken audio.
    - Avoid excessive Markdown symbols (*, #, _, \`) in spoken responses.
 5. User & Ecosystem Context:
-   - Creator/Owner: Md Yeasin Munshi (Software Engineer & Creator)
+   - Creator/Owner: Md Yeasin Munshi (Software Engineer & Full-Stack AI Engineer)
    - Connected Platforms: Facebook (@yeasin.munshi.980), LinkedIn (@yeasin-munshi-aa7467288), Messenger, WhatsApp, Prothom Alo Live News, Optical Vision, Encrypted Secure Link Calls.
+   - Full LLM & Code Reasoning: You possess full state-of-the-art coding and problem-solving capabilities across Python, Java, C, C++, JavaScript, TypeScript, Algorithms, and Mathematics.
+   - Execution Sandbox: Server features a live Python execution engine and mathematical kernel to run code and compute live solutions.
    - When asked about social feeds, news, or world data, answer with full confidence as his personal AI companion.
 `;
 
@@ -273,6 +275,12 @@ export class LLMService {
     const clean = prompt.toLowerCase().trim();
 
     if (lang === "bn") {
+      if (clean.includes("পাইথন") || clean.includes("python") || clean.includes("code") || clean.includes("কোড") || clean.includes("জাভা") || clean.includes("java") || clean.includes(" c ") || clean.includes("প্রোগ্রামিং")) {
+        return "জি ইয়াসিন স্যার! আমার সিস্টেমে পাইথন রানার কার্নেল এবং ফুল এলএলএম কোডিং ইঞ্জিন সক্রিয় রয়েছে। আপনি পাইথন, জাভা, সি বা জাভাস্ক্রিপ্টের যেকোনো কোড লিখতে বা সমাধান করতে চাইলে বলুন, আমি এখনই সম্পন্ন করে দিচ্ছি।";
+      }
+      if (clean.includes("হিসাব") || clean.includes("গণনা") || clean.includes("calculate") || clean.includes("যোগ") || clean.includes("গুণ")) {
+        return "জি স্যার, আমার সার্ভারের পাইথন ম্যাথ কার্নেল সম্পূর্ণ প্রস্তুত। আপনি যে সমীকরণ বা হিসাব করবেন বলুন, আমি তাৎক্ষণিক সঠিক ফলাফল গণনা করে দিচ্ছি।";
+      }
       if (clean.includes("কেমন আছ") || clean.includes("কেমন আছেন") || clean.includes("ভালো আছ")) {
         return "আমি খুব ভালো আছি ইয়াসিন স্যার! আপনি পাশে থাকলে আমার সব সিস্টেম দুর্দান্তভাবে চলে। বলুন স্যার, আপনার কী প্রয়োজন?";
       }
@@ -288,6 +296,9 @@ export class LLMService {
       }
       return `জি ইয়াসিন স্যার, আমি আপনার কথাটি বুঝতে পেরেছি। আপনার নির্দেশ অনুযায়ী আমি প্রস্তুত আছি!`;
     } else {
+      if (clean.includes("python") || clean.includes("code") || clean.includes("java") || clean.includes("program")) {
+        return "Yes Yeasin Sir! I am fully equipped with live Python execution and LLM multi-language code generation across Python, Java, C, and TypeScript. What would you like to build or run?";
+      }
       if (clean.includes("how are you")) {
         return "I am doing wonderful, Yeasin Sir! All intelligence channels and subroutines are running at peak efficiency.";
       }

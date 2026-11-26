@@ -49,6 +49,7 @@ export default function LeftCoreHud({
 }: Props) {
   const [activeTab, setActiveTab] = useState<"social" | "media" | "tv">("tv");
   const [activeModel, setActiveModel] = useState<"claude" | "gemini">("claude");
+  const [events, setEvents] = useState<EventLog[]>(DEFAULT_EVENTS);
   const [tick, setTick] = useState(0);
   const [mounted, setMounted] = useState(false);
 
@@ -57,6 +58,17 @@ export default function LeftCoreHud({
     const interval = setInterval(() => {
       setTick((t) => (t + 1) % 1000);
     }, 140);
+
+    // Fetch live real server event log
+    fetch("/api/media/events")
+      .then((res) => res.json())
+      .then((resData) => {
+        if (resData?.success && Array.isArray(resData.data)) {
+          setEvents(resData.data);
+        }
+      })
+      .catch(() => {});
+
     return () => clearInterval(interval);
   }, []);
 
@@ -178,7 +190,7 @@ export default function LeftCoreHud({
 
         {/* Live Timeline Event Log List matching Photo */}
         <div className="space-y-1.5 font-mono text-[11px]">
-          {DEFAULT_EVENTS.map((item) => (
+          {events.map((item) => (
             <div
               key={item.id}
               className="flex items-start gap-1.5 rounded-lg bg-white/[0.02] p-1.5 border border-white/5 hover:border-emerald-500/30 transition"

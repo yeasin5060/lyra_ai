@@ -35,6 +35,22 @@ export class MediaController {
       data: messages
     });
   }
+
+  public getEvents(_req: Request, res: Response): void {
+    const events = mediaPlatformService.getLiveEvents();
+    res.json({
+      success: true,
+      data: events
+    });
+  }
+
+  public getStats(_req: Request, res: Response): void {
+    const stats = mediaPlatformService.getDashboardStats();
+    res.json({
+      success: true,
+      data: stats
+    });
+  }
 }
 
 export const mediaController = new MediaController();

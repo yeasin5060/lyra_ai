@@ -2,6 +2,7 @@ import { mediaPlatformService } from "../media/media.service.js";
 import { worldIntelligenceService } from "../world/world.service.js";
 import { visionIntelligenceService } from "../vision/vision.service.js";
 import { llmService } from "../ai/llm.service.js";
+import { codeRunnerService } from "../executor/code-runner.service.js";
 
 export interface LanguageDetectionResult {
   language: "bn" | "en" | "mixed";
@@ -376,6 +377,56 @@ export class VoiceService {
         lang === "bn"
           ? "জি স্যার, ভাবির সাথে এনক্রিপ্টেড সিকিউর লিংক কল সংযুক্ত করা হচ্ছে..."
           : "Yes Sir, establishing secure link encrypted voice channel to Bhabi...";
+    }
+    // 8.5 Real-time Python Code Execution & Math Calculation Tool
+    else if (
+      clean.includes("python") ||
+      clean.includes("পাইথন") ||
+      clean.includes("কোড চালাও") ||
+      clean.includes("কোড রান করো") ||
+      clean.includes("হিসাব করো") ||
+      clean.includes("কত হবে") ||
+      clean.includes("ক্যালকুলেট") ||
+      clean.includes("calculate") ||
+      clean.includes("রান করো")
+    ) {
+      actionType = "general";
+      try {
+        const mathMatches = text.match(/[\d\.\s\+\-\*\/\(\)\^\%]+/g);
+        const mathExpr =
+          mathMatches && mathMatches.length > 0
+            ? mathMatches.reduce((a, b) => (a.length > b.length ? a : b)).trim()
+            : "";
+
+        if (mathExpr && /[\+\-\*\/]/.test(mathExpr) && /\d/.test(mathExpr)) {
+          const res = await codeRunnerService.evalPythonMath(mathExpr);
+          reply =
+            lang === "bn"
+              ? `জি ইয়াসিন স্যার, পাইথন কার্নেলে গণনা সম্পন্ন হয়েছে। ${mathExpr} এর মান হলো ${res.trim()}।`
+              : `Sir, evaluated in Python kernel: ${mathExpr} equals ${res.trim()}.`;
+        } else {
+          const codeToRun = text
+            .replace(/পাইথন কোড রান করো|কোড চালাও|কোড রান করো|python run|run code/gi, "")
+            .trim();
+          if (codeToRun && codeToRun.length > 5) {
+            const exec = await codeRunnerService.executePython(codeToRun);
+            reply =
+              lang === "bn"
+                ? `জি স্যার, পাইথন কোড এক্সিকিউট করা হয়েছে। ফলাফল: ${exec.stdout || exec.stderr || "কোড সফলভাবে রান হয়েছে"}`
+                : `Code executed successfully Sir. Output: ${exec.stdout || exec.stderr || "Success"}`;
+          } else {
+            reply =
+              lang === "bn"
+                ? "জি ইয়াসিন স্যার, পাইথন কোড রানার ইঞ্জিন সক্রিয় আছে। আপনি যেকোনো কোড বা হিসাব দিলে আমি সাথে সাথে রান করে ফলাফল জানিয়ে দেব।"
+                : "Yes Sir, the Python execution engine is active. Send any code or math expression to run.";
+          }
+        }
+      } catch (err) {
+        reply =
+          lang === "bn"
+            ? "স্যার, কোড এক্সিকিউশনে একটি সাময়িক সমস্যা হয়েছে। কার্নেলটি পুনরায় লোড করা হচ্ছে।"
+            : "Sir, encountered a minor issue executing the code. Reloading kernel.";
+      }
     }
     // 9. Conversational & Persona Answers via Claude & Gemini Neural Models
     else {

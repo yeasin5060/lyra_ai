@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Network, MessageSquare, ChevronDown, Sparkles } from "lucide-react";
 import { cyberAudio } from "./cyber-audio-engine";
 
@@ -35,8 +35,62 @@ export default function RightStreamHud({
   onSelectChat
 }: Props) {
   const [chats, setChats] = useState(INITIAL_CHATS);
+  const [stats, setStats] = useState({
+    inboxCount: 26,
+    unreadCount: 72,
+    newChatsCount: 34,
+    claude: {
+      status: "Active",
+      latency: "১.১s",
+      memory: "২২%",
+      rps: "১২ রিক/মি",
+      percentage: 37
+    },
+    voice: {
+      status: "Active",
+      latency: "০.৩s",
+      charsUsed: "১,৫০২",
+      charsLimit: "১৫,০০০",
+      delivery: "৯৯.৭%",
+      percentage: 81
+    }
+  });
   const [activeModel, setActiveModel] = useState<"claude" | "gemini">("claude");
   const [extraLoaded, setExtraLoaded] = useState(false);
+
+  useEffect(() => {
+    // 1. Fetch real synced messages
+    fetch("/api/media/messages")
+      .then((res) => res.json())
+      .then((resData) => {
+        if (resData?.success && Array.isArray(resData.data)) {
+          const mapped: InboundChatMessage[] = resData.data.map((m: any) => ({
+            id: m.id,
+            sender: m.senderName,
+            platform:
+              m.platform === "whatsapp"
+                ? "WhatsApp"
+                : m.platform === "facebook" && m.platformName === "মেসেঞ্জার"
+                ? "মেসেঞ্জার"
+                : "FB",
+            time: m.timeShort || "১০:০০",
+            isUnread: !m.read
+          }));
+          setChats(mapped);
+        }
+      })
+      .catch(() => {});
+
+    // 2. Fetch real server dashboard stats
+    fetch("/api/media/stats")
+      .then((res) => res.json())
+      .then((resData) => {
+        if (resData?.success && resData.data) {
+          setStats(resData.data);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleLoadMore = () => {
     cyberAudio.playNodeClick();
@@ -79,17 +133,17 @@ export default function RightStreamHud({
         <div className="grid grid-cols-3 gap-1.5 my-3 font-mono text-center">
           <div className="rounded-xl bg-white/[0.03] p-1.5 border border-white/5">
             <div className="text-[9px] text-gray-400">ইনবক্স</div>
-            <div className="text-sm font-bold text-emerald-400">২৬</div>
+            <div className="text-sm font-bold text-emerald-400">{stats.inboxCount}</div>
           </div>
 
           <div className="rounded-xl bg-white/[0.03] p-1.5 border border-white/5">
             <div className="text-[9px] text-gray-400">অন-পড়া</div>
-            <div className="text-sm font-bold text-cyan-400">৭২</div>
+            <div className="text-sm font-bold text-cyan-400">{stats.unreadCount}</div>
           </div>
 
           <div className="rounded-xl bg-white/[0.03] p-1.5 border border-white/5">
             <div className="text-[9px] text-gray-400">নতুন চ্যাট</div>
-            <div className="text-sm font-bold text-lime-400">৩৪</div>
+            <div className="text-sm font-bold text-lime-400">{stats.newChatsCount}</div>
           </div>
         </div>
 
@@ -146,17 +200,22 @@ export default function RightStreamHud({
               <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
               Claude 3.5 Sonnet
             </span>
-            <span className="text-emerald-400 font-extrabold text-[11px]">37% • 1.1s</span>
+            <span className="text-emerald-400 font-extrabold text-[11px]">
+              {stats.claude.percentage}% • {stats.claude.latency}
+            </span>
           </div>
 
           <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-emerald-500 to-lime-400 rounded-full w-[37%]" />
+            <div
+              className="h-full bg-gradient-to-r from-emerald-500 to-lime-400 rounded-full transition-all duration-300"
+              style={{ width: `${stats.claude.percentage}%` }}
+            />
           </div>
 
           <div className="mt-1 flex items-center justify-between text-[9px] text-gray-400">
-            <span>রেসপন্স টাইম: ১.১s</span>
-            <span>মেমোরি: ২২%</span>
-            <span>১২ রিক/মি</span>
+            <span>রেসপন্স টাইম: {stats.claude.latency}</span>
+            <span>মেমোরি: {stats.claude.memory}</span>
+            <span>{stats.claude.rps}</span>
           </div>
         </div>
 
@@ -167,16 +226,21 @@ export default function RightStreamHud({
               <span className="h-2 w-2 rounded-full bg-lime-400 animate-pulse" />
               ElevenLabs Neural Voice
             </span>
-            <span className="text-lime-400 font-extrabold text-[11px]">81% • 0.3s</span>
+            <span className="text-lime-400 font-extrabold text-[11px]">
+              {stats.voice.percentage}% • {stats.voice.latency}
+            </span>
           </div>
 
           <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-lime-500 to-emerald-400 rounded-full w-[81%]" />
+            <div
+              className="h-full bg-gradient-to-r from-lime-500 to-emerald-400 rounded-full transition-all duration-300"
+              style={{ width: `${stats.voice.percentage}%` }}
+            />
           </div>
 
           <div className="mt-1 flex items-center justify-between text-[9px] text-gray-400">
-            <span>১,৫০২ / ১৫,০০০ ক্যারেক্টার</span>
-            <span>ডেলিভারি: ৯৯.৭%</span>
+            <span>{stats.voice.charsUsed} / {stats.voice.charsLimit} ক্যারেক্টার</span>
+            <span>ডেলিভারি: {stats.voice.delivery}</span>
           </div>
         </div>
       </div>

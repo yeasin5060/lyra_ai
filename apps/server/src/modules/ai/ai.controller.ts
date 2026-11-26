@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { llmService } from "./llm.service.js";
+import { codeRunnerService } from "../executor/code-runner.service.js";
 
 export class AIController {
   public getModels(_req: Request, res: Response): void {
@@ -66,6 +67,47 @@ export class AIController {
       res.status(500).json({
         success: false,
         message: "Failed to generate AI response"
+      });
+    }
+  }
+
+  public async executeCode(req: Request, res: Response): Promise<void> {
+    const { code, language = "python", expression } = req.body as {
+      code?: string;
+      language?: "python";
+      expression?: string;
+    };
+
+    try {
+      if (expression && typeof expression === "string") {
+        const mathResult = await codeRunnerService.evalPythonMath(expression);
+        res.json({
+          success: true,
+          data: {
+            output: mathResult,
+            expression
+          }
+        });
+        return;
+      }
+
+      if (!code || typeof code !== "string") {
+        res.status(400).json({
+          success: false,
+          message: "Code snippet or expression is required"
+        });
+        return;
+      }
+
+      const result = await codeRunnerService.executePython(code);
+      res.json({
+        success: result.success,
+        data: result
+      });
+    } catch (err: any) {
+      res.status(500).json({
+        success: false,
+        message: err?.message || "Execution failed"
       });
     }
   }
