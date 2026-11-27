@@ -63,7 +63,7 @@ export function useVoiceAssistant() {
   const isSleepingRef = useRef(false);
   const isSpeakingRef = useRef(false);
   const hasProcessedRef = useRef(false);
-  const processQueryRef = useRef<(text: string) => Promise<void>>(async () => {});
+  const processQueryRef = useRef<(text: string) => Promise<void>>(async () => { });
 
   useEffect(() => {
     isSleepingRef.current = isSleeping;
@@ -344,7 +344,7 @@ export function useVoiceAssistant() {
             return;
           }
         }
-      } catch {}
+      } catch { }
 
       // Fallback intent responses
       let reply = "";

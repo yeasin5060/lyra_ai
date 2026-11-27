@@ -82,12 +82,80 @@ export class CodeRunnerService {
   }
 
   /**
+   * Executes JavaScript code snippet via Node.js.
+   */
+  public async executeJavaScript(code: string, timeoutMs = 8000): Promise<CodeExecutionResult> {
+    const startTime = Date.now();
+    return await new Promise<CodeExecutionResult>((resolve) => {
+      let stdout = "";
+      let stderr = "";
+
+      const child = spawn("node", ["-e", code], {
+        timeout: timeoutMs
+      });
+
+      child.stdout.on("data", (data) => {
+        stdout += data.toString("utf-8");
+      });
+
+      child.stderr.on("data", (data) => {
+        stderr += data.toString("utf-8");
+      });
+
+      child.on("error", (err) => {
+        resolve({
+          success: false,
+          language: "javascript",
+          stdout: stdout.trim(),
+          stderr: `Execution error: ${err.message}`,
+          executionTimeMs: Date.now() - startTime,
+          exitCode: -1
+        });
+      });
+
+      child.on("close", (code) => {
+        resolve({
+          success: code === 0,
+          language: "javascript",
+          stdout: stdout.trim(),
+          stderr: stderr.trim(),
+          executionTimeMs: Date.now() - startTime,
+          exitCode: code
+        });
+      });
+    });
+  }
+
+  /**
    * Quick evaluation of mathematical expressions or one-liners.
    */
   public async evalPythonMath(expression: string): Promise<string> {
     const script = `import math\ntry:\n    res = ${expression}\n    print(res)\nexcept Exception as e:\n    print(f"Error: {e}")`;
     const result = await this.executePython(script, 4000);
     return result.stdout || result.stderr || "No output";
+  }
+
+  /**
+   * Server hardware and operating system metrics.
+   */
+  public getSystemMetrics() {
+    const totalMem = os.totalmem();
+    const freeMem = os.freemem();
+    const usedMem = totalMem - freeMem;
+    const cpus = os.cpus();
+
+    return {
+      platform: os.platform(),
+      osType: os.type(),
+      arch: os.arch(),
+      hostname: os.hostname(),
+      cpuCount: cpus.length,
+      cpuModel: cpus[0]?.model || "Generic CPU",
+      ramUsedMb: Math.round(usedMem / (1024 * 1024)),
+      ramTotalMb: Math.round(totalMem / (1024 * 1024)),
+      ramPercent: Math.round((usedMem / totalMem) * 100),
+      uptimeHours: Number((os.uptime() / 3600).toFixed(2))
+    };
   }
 }
 

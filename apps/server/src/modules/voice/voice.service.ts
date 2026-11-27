@@ -542,7 +542,8 @@ export class VoiceService {
         actionPayload = {
           modelUsed: llmResult.modelUsed,
           provider: llmResult.provider,
-          latencyMs: llmResult.latencyMs
+          latencyMs: llmResult.latencyMs,
+          executedTools: llmResult.executedTools
         };
       } catch (err) {
         console.warn("LLM generation fallback in VoiceService:", err);
