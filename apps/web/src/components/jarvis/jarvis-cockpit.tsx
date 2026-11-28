@@ -98,9 +98,12 @@ export default function JarvisCockpit({
 
   const fetchLiveNews = async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      const res = await fetch(`${apiUrl}/api/world/news?lang=bn`);
-      if (res.ok) {
+      let res = await fetch("/api/world/news?lang=bn").catch(() => null);
+      if (!res || !res.ok) {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+        res = await fetch(`${apiUrl}/api/world/news?lang=bn`).catch(() => null);
+      }
+      if (res && res.ok) {
         const json = await res.json();
         if (json.data?.articles) {
           setNewsArticles(json.data.articles);
